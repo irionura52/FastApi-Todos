@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+</head>
+<body>
+    <h1>To-Do List</h1>
+    <ul id="todo-list"></ul>
+    <form id="todo-form">
+        <input type="text" id="title" placeholder="Title" required>
+        <input type="text" id="description" placeholder="Description" required>
+        <button type="submit">Add To-Do</button>
+    </form>
+    
+    <script>
+        async function fetchTodos() {
+            try {
+                const response = await fetch('/todos');
+                if (!response.ok) throw new Error('Failed to fetch todos');
+                const todos = await response.json();
+                const todoList = document.getElementById('todo-list');
+                todoList.innerHTML = '';
+
+                todos.forEach(todo => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `${todo.title}: ${todo.description} (Completed: ${todo.completed}) `;
+
+                    // Edit 버튼 추가
+                    const editButton = document.createElement('button');
+                    editButton.textContent = "Edit";
+                    editButton.onclick = () => editTodo(todo);
+
+                    // Delete 버튼 추가
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = "Delete";
+                    deleteButton.onclick = () => deleteTodo(todo.id);
+
+                    // 리스트에 버튼 추가
+                    li.appendChild(editButton);
+                    li.appendChild(deleteButton);
+                    todoList.appendChild(li);
+                });
+            } catch (error) {
+                console.error("Error fetching todos:", error);
+            }
+        }
+
+        document.getElementById('todo-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+
+            const newTodo = {
+                id: Date.now(), // 고유 ID 부여
+                title,
+                description,
+                completed: false
+            };
+
+            try {
+                const response = await fetch('/todos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(newTodo)
+                });
+
+                if (response.ok) {
+                    document.getElementById('title').value = "";
+                    document.getElementById('description').value = "";
+                    fetchTodos();
+                } else {
+                    console.error("Failed to add todo");
+                }
+            } catch (error) {
+                console.error("Error adding todo:", error);
+            }
+        });
+
+        // Edit 기능
+        async function editTodo(todo) {
+            const newTitle = prompt("Edit Title:", todo.title);
+            const newDescription = prompt("Edit Description:", todo.description);
+            if (!newTitle || !newDescription) {
+                alert("Title or Description is NULL!");
+                return;
+            }
+            if (newTitle !== null && newDescription !== null) {
+                const updatedTodo = { ...todo, title: newTitle, description: newDescription };
+                
+                try {
+                    const response = await fetch(`/todos/${todo.id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(updatedTodo)
+                    });
+
+                    if (response.ok) {
+                        fetchTodos();
+                    } else {
+                        console.error("Failed to update todo");
+                    }
+                } catch (error) {
+                    console.error("Error updating todo:", error);
+                }
+            }
+        }
+
+        // Delete 기능
+        async function deleteTodo(todoId) {
+            try {
+                const response = await fetch(`/todos/${todoId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    fetchTodos();
+                } else {
+                    console.error("Failed to delete todo");
+                }
+            } catch (error) {
+                console.error("Error deleting todo:", error);
+            }
+        }
+
+        fetchTodos();  // 페이지 로드 시 To-Do 리스트 가져오기
+    </script>
+
+</body>
+</html>
