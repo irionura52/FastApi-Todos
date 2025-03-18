@@ -1,0 +1,46 @@
+name: Deploy FastAPI App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up SSH and Deploy
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          APP_PATH: "/home/${{ secrets.SERVER_USER }}/fastapi_app"
+
+        run: |
+          echo "$SSH_PRIVATE_KEY" > private_key
+          chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key $SERVER_USER@$SERVER_IP << 'EOF'
+            set -e
+            cd $APP_PATH
+            
+            # 최신 코드 가져오기
+            git pull origin main
+            
+            # 가상 환경 활성화 및 의존성 설치
+            source venv/bin/activate
+            pip install -r requirements.txt
+            
+            # 기존 FastAPI 프로세스 종료
+            pkill -f "uvicorn main:app" || true
+            
+            # FastAPI 백그라운드 실행 (nohup + setsid)
+            nohup setsid uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4 > uvicorn.log 2>&1 &
+          EOF
+
+      - name: Cleanup
+        run: rm -f private_key
