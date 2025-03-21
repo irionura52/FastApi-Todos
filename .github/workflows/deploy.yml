@@ -28,8 +28,9 @@ jobs:
             set -e
             cd $APP_PATH
             
-            # 최신 코드 가져오기
-            git pull origin main
+            # 최신 코드 가져오기 pull 없애고 넣음
+            git fetch origin
+            git reset --hard origin/main
             
             # 가상 환경 활성화 및 의존성 설치
             source ../myenv/bin/activate
