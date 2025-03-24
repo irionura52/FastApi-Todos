@@ -5,28 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>To-Do List</title>
     <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
         h1 {
             color: blue;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        input, button {
+            padding: 5px;
+            margin: 5px;
         }
         ul {
             list-style: none;
             padding: 0;
         }
         li {
-            color: black;
             font-size: 16px;
+            margin: 10px auto;
+            max-width: 400px;
+            text-align: left;
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-radius: 8px;
         }
     </style>
 </head>
 <body>
     <h1>To-Do List</h1>
-    <ul id="todo-list"></ul>
     <form id="todo-form">
         <input type="text" id="title" placeholder="Title" required>
         <input type="text" id="description" placeholder="Description" required>
         <button type="submit">Add To-Do</button>
     </form>
-    
+    <ul id="todo-list"></ul>
+
     <script>
         async function fetchTodos() {
             try {
@@ -38,21 +54,45 @@
 
                 todos.forEach(todo => {
                     const li = document.createElement('li');
-                    li.innerHTML = `${todo.title}: ${todo.description} (Completed: ${todo.completed}) `;
 
-                    // Edit 버튼 추가
+                    // 체크박스
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = todo.completed;
+                    checkbox.onchange = async () => {
+                        const updatedTodo = { ...todo, completed: checkbox.checked };
+                        try {
+                            await fetch(`/todos/${todo.id}`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(updatedTodo)
+                            });
+                            fetchTodos();
+                        } catch (error) {
+                            console.error("Failed to update checkbox:", error);
+                        }
+                    };
+
+                    const span = document.createElement('span');
+                    span.textContent = `${todo.title}: ${todo.description}`;
+
+                    li.appendChild(checkbox);
+                    li.appendChild(span);
+
+                    // Edit 버튼
                     const editButton = document.createElement('button');
                     editButton.textContent = "Edit";
                     editButton.onclick = () => editTodo(todo);
+                    li.appendChild(editButton);
 
-                    // Delete 버튼 추가
+                    // Delete 버튼
                     const deleteButton = document.createElement('button');
                     deleteButton.textContent = "Delete";
                     deleteButton.onclick = () => deleteTodo(todo.id);
-
-                    // 리스트에 버튼 추가
-                    li.appendChild(editButton);
                     li.appendChild(deleteButton);
+
                     todoList.appendChild(li);
                 });
             } catch (error) {
@@ -66,7 +106,7 @@
             const description = document.getElementById('description').value;
 
             const newTodo = {
-                id: Date.now(), // 고유 ID 부여
+                id: Date.now(),
                 title,
                 description,
                 completed: false
@@ -75,9 +115,7 @@
             try {
                 const response = await fetch('/todos', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(newTodo)
                 });
 
@@ -93,7 +131,6 @@
             }
         });
 
-        // Edit 기능
         async function editTodo(todo) {
             const newTitle = prompt("Edit Title:", todo.title);
             const newDescription = prompt("Edit Description:", todo.description);
@@ -101,30 +138,25 @@
                 alert("Title or Description is NULL!");
                 return;
             }
-            if (newTitle !== null && newDescription !== null) {
-                const updatedTodo = { ...todo, title: newTitle, description: newDescription };
-                
-                try {
-                    const response = await fetch(`/todos/${todo.id}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(updatedTodo)
-                    });
 
-                    if (response.ok) {
-                        fetchTodos();
-                    } else {
-                        console.error("Failed to update todo");
-                    }
-                } catch (error) {
-                    console.error("Error updating todo:", error);
+            const updatedTodo = { ...todo, title: newTitle, description: newDescription };
+            try {
+                const response = await fetch(`/todos/${todo.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedTodo)
+                });
+
+                if (response.ok) {
+                    fetchTodos();
+                } else {
+                    console.error("Failed to update todo");
                 }
+            } catch (error) {
+                console.error("Error updating todo:", error);
             }
         }
 
-        // Delete 기능
         async function deleteTodo(todoId) {
             try {
                 const response = await fetch(`/todos/${todoId}`, {
@@ -141,8 +173,7 @@
             }
         }
 
-        fetchTodos();  // 페이지 로드 시 To-Do 리스트 가져오기
+        fetchTodos();  // 페이지 로드시 초기 데이터 로드
     </script>
-
 </body>
 </html>
