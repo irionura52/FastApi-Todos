@@ -1,52 +1,43 @@
-name: Deploy FastAPI App
+- name: Set up SSH and Deploy
+  env:
+    SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+    SERVER_IP: ${{ secrets.SERVER_IP }}
+    SERVER_USER: ${{ secrets.SERVER_USER }}
+    APP_PATH: "/home/${{ secrets.SERVER_USER }}/FastApi-Todos"
 
-on:
-  push:
-    branches:
-      - main
+  run: |
+    echo "$SSH_PRIVATE_KEY" > private_key
+    chmod 600 private_key
+    ssh -o StrictHostKeyChecking=no -i private_key $SERVER_USER@$SERVER_IP << EOF
+      set -e
+      
+      # 👉 현재 경로로 이동
+      cd \$APP_PATH
 
-jobs:
-  deploy:
-    name: Deploy to Server
-    runs-on: ubuntu-latest
+      # 🪵 디버깅 로그 추가
+      echo "[DEBUG] 현재 경로는:"
+      pwd
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      echo "[DEBUG] .git 폴더 있는지 확인:"
+      ls -a
 
-      - name: Set up SSH and Deploy
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SERVER_IP: ${{ secrets.SERVER_IP }}
-          SERVER_USER: ${{ secrets.SERVER_USER }}
-          APP_PATH: "/home/${{ secrets.SERVER_USER }}/FastApi-Todos"
+      echo "[DEBUG] git status 결과:"
+      git status
 
-        run: |
-          echo "$SSH_PRIVATE_KEY" > private_key
-          chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key $SERVER_USER@$SERVER_IP << EOF
-            set -e
-            
-            # FastAPI 프로젝트 루트 디렉토리로 이동
-            cd \$APP_PATH
+      # 👉 Git 최신 코드로 리셋
+      git fetch origin
+      git reset --hard origin/main
 
-            # 최신 코드 가져오기
-            git fetch origin
-            git reset --hard origin/main
+      # 👉 앱 폴더로 이동
+      cd fastapi-app
 
-            # 실제 FastAPI 앱이 있는 하위 디렉토리로 이동
-            cd fastapi-app
+      # 👉 가상환경 활성화
+      source /home/\$USER/myenv/bin/activate
+      pip install -r requirements.txt
 
-            # 가상환경 활성화 및 의존성 설치
-            source /home/\$USER/myenv/bin/activate
-            pip install -r requirements.txt
+      # 👉 기존 프로세스 종료
+      pkill -f "uvicorn main:app" || true
 
-            # 기존 FastAPI 프로세스 종료 (없으면 무시)
-            pkill -f "uvicorn main:app" || true
-
-            # FastAPI 앱 실행 (백그라운드)
-            nohup setsid uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4 > ../uvicorn.log 2>&1 &
-          EOF
-
-      - name: Cleanup
-        run: rm -f private_key
+      # 👉 앱 실행
+      nohup setsid uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4 > ../uvicorn.log 2>&1 &
+    EOF
