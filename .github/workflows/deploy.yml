@@ -26,31 +26,33 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i private_key $SERVER_USER@$SERVER_IP bash << 'EOF'
             set -e
 
-            # FastAPI 프로젝트 루트 디렉토리로 이동
+            # 🔐 SSH 에이전트 실행 및 키 등록
+            eval "$(ssh-agent -s)"
+            ssh-add ~/.ssh/id_rsa
+
+            # FastAPI 프로젝트 디렉토리로 이동
             cd /home/ubuntu/FastApi-Todos
 
-            # 디버깅용 출력
+            # 디버깅 정보 출력
             echo "[DEBUG] 현재 경로:"
             pwd
-
             echo "[DEBUG] .git 폴더 확인:"
             ls -a
-
             echo "[DEBUG] git 상태 확인:"
             git status
 
-            # 최신 코드로 업데이트
+            # 최신 코드 가져오기
             git fetch origin
             git reset --hard origin/main
 
-            # FastAPI 앱 디렉토리로 이동
+            # FastAPI 앱 디렉토리로 이동 및 가상환경 활성화
             cd fastapi-app
-
-            # 가상환경 활성화 및 의존성 설치
             source /home/ubuntu/myenv/bin/activate
+
+            # 의존성 설치
             pip install -r requirements.txt
 
-            # 기존 FastAPI 프로세스 종료 (없어도 무시)
+            # 기존 프로세스 종료
             pkill -f "uvicorn main:app" || true
 
             # FastAPI 실행
