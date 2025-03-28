@@ -19,28 +19,34 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SERVER_IP: ${{ secrets.SERVER_IP }}
           SERVER_USER: ${{ secrets.SERVER_USER }}
-          APP_PATH: "/home/${{ secrets.SERVER_USER }}/FastApi-Todos"  # 서버에 있는 FastAPI 앱 경로
+          APP_PATH: "/home/${{ secrets.SERVER_USER }}/FastApi-Todos"
 
         run: |
           echo "$SSH_PRIVATE_KEY" > private_key
           chmod 600 private_key
           ssh -o StrictHostKeyChecking=no -i private_key $SERVER_USER@$SERVER_IP << EOF
             set -e
-            cd $APP_PATH
             
-            # 최신 코드 가져오기 pull 없애고 넣음
+            # FastAPI 프로젝트 루트 디렉토리로 이동
+            cd \$APP_PATH
+
+            # 최신 코드 가져오기
             git fetch origin
             git reset --hard origin/main
-            
-            # 가상 환경 활성화 및 의존성 설치
-            source ../myenv/bin/activate
+
+            # 실제 FastAPI 앱이 있는 하위 디렉토리로 이동
+            cd fastapi-app
+
+            # 가상환경 활성화 및 의존성 설치
+            source /home/\$USER/myenv/bin/activate
             pip install -r requirements.txt
-            
-            # 기존 FastAPI 프로세스 종료
+
+            # 기존 FastAPI 프로세스 종료 (없으면 무시)
             pkill -f "uvicorn main:app" || true
-            
-            # FastAPI 백그라운드 실행 (nohup + setsid)
-            nohup setsid uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4 > uvicorn.log 2>&1 &
+
+            # FastAPI 앱 실행 (백그라운드)
+            nohup setsid uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4 > ../uvicorn.log 2>&1 &
           EOF
+
       - name: Cleanup
         run: rm -f private_key
