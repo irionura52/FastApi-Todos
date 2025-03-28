@@ -1,43 +1,62 @@
-- name: Set up SSH and Deploy
-  env:
-    SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-    SERVER_IP: ${{ secrets.SERVER_IP }}
-    SERVER_USER: ${{ secrets.SERVER_USER }}
-    APP_PATH: "/home/${{ secrets.SERVER_USER }}/FastApi-Todos"
+name: Deploy FastAPI App
 
-  run: |
-    echo "$SSH_PRIVATE_KEY" > private_key
-    chmod 600 private_key
-    ssh -o StrictHostKeyChecking=no -i private_key $SERVER_USER@$SERVER_IP << EOF
-      set -e
-      
-      # 👉 현재 경로로 이동
-      cd \$APP_PATH
+on:
+  push:
+    branches:
+      - main
 
-      # 🪵 디버깅 로그 추가
-      echo "[DEBUG] 현재 경로는:"
-      pwd
+jobs:
+  deploy:
+    name: Deploy to Server
+    runs-on: ubuntu-latest
 
-      echo "[DEBUG] .git 폴더 있는지 확인:"
-      ls -a
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      echo "[DEBUG] git status 결과:"
-      git status
+      - name: Set up SSH and Deploy
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          APP_PATH: "/home/${{ secrets.SERVER_USER }}/FastApi-Todos"
 
-      # 👉 Git 최신 코드로 리셋
-      git fetch origin
-      git reset --hard origin/main
+        run: |
+          echo "$SSH_PRIVATE_KEY" > private_key
+          chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key $SERVER_USER@$SERVER_IP << EOF
+            set -e
 
-      # 👉 앱 폴더로 이동
-      cd fastapi-app
+            # FastAPI 프로젝트 루트로 이동
+            cd \$APP_PATH
 
-      # 👉 가상환경 활성화
-      source /home/\$USER/myenv/bin/activate
-      pip install -r requirements.txt
+            # 디버깅 출력
+            echo "[DEBUG] 현재 경로:"
+            pwd
 
-      # 👉 기존 프로세스 종료
-      pkill -f "uvicorn main:app" || true
+            echo "[DEBUG] .git 확인:"
+            ls -a
 
-      # 👉 앱 실행
-      nohup setsid uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4 > ../uvicorn.log 2>&1 &
-    EOF
+            echo "[DEBUG] git status:"
+            git status
+
+            # 최신 코드 가져오기
+            git fetch origin
+            git reset --hard origin/main
+
+            # fastapi-app 폴더로 이동
+            cd fastapi-app
+
+            # 가상환경 활성화 및 의존성 설치
+            source /home/\$USER/myenv/bin/activate
+            pip install -r requirements.txt
+
+            # 기존 프로세스 종료
+            pkill -f "uvicorn main:app" || true
+
+            # FastAPI 실행
+            nohup setsid uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4 > ../uvicorn.log 2>&1 &
+          EOF
+
+      - name: Cleanup
+        run: rm -f private_key
