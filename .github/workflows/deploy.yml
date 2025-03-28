@@ -19,39 +19,38 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SERVER_IP: ${{ secrets.SERVER_IP }}
           SERVER_USER: ${{ secrets.SERVER_USER }}
-          APP_PATH: "/home/${{ secrets.SERVER_USER }}/FastApi-Todos"
-
         run: |
           echo "$SSH_PRIVATE_KEY" > private_key
           chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key $SERVER_USER@$SERVER_IP << EOF
+
+          ssh -o StrictHostKeyChecking=no -i private_key $SERVER_USER@$SERVER_IP bash << 'EOF'
             set -e
 
-            # FastAPI 프로젝트 루트로 이동
-            cd \$APP_PATH
+            # FastAPI 프로젝트 루트 디렉토리로 이동
+            cd /home/ubuntu/FastApi-Todos
 
-            # 디버깅 출력
+            # 디버깅용 출력
             echo "[DEBUG] 현재 경로:"
             pwd
 
-            echo "[DEBUG] .git 확인:"
+            echo "[DEBUG] .git 폴더 확인:"
             ls -a
 
-            echo "[DEBUG] git status:"
+            echo "[DEBUG] git 상태 확인:"
             git status
 
-            # 최신 코드 가져오기
+            # 최신 코드로 업데이트
             git fetch origin
             git reset --hard origin/main
 
-            # fastapi-app 폴더로 이동
+            # FastAPI 앱 디렉토리로 이동
             cd fastapi-app
 
             # 가상환경 활성화 및 의존성 설치
-            source /home/\$USER/myenv/bin/activate
+            source /home/ubuntu/myenv/bin/activate
             pip install -r requirements.txt
 
-            # 기존 프로세스 종료
+            # 기존 FastAPI 프로세스 종료 (없어도 무시)
             pkill -f "uvicorn main:app" || true
 
             # FastAPI 실행
