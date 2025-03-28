@@ -1,0 +1,18 @@
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started parent process [30613]
+INFO:     Started server process [30615]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Started server process [30616]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Started server process [30618]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Started server process [30617]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     1.229.150.95:53654 - "GET / HTTP/1.1" 200 OK
+INFO:     1.229.150.95:53654 - "GET /todos HTTP/1.1" 200 OK
+INFO:     1.229.150.95:53676 - "GET / HTTP/1.1" 200 OK
+INFO:     1.229.150.95:53676 - "GET /todos HTTP/1.1" 200 OK

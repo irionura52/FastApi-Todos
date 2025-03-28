@@ -1,0 +1,17 @@
+INFO:     Will watch for changes in these directories: ['/home/ubuntu/FastApi-Todos']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [30503] using WatchFiles
+INFO:     Started server process [30507]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     1.229.150.95:53643 - "GET / HTTP/1.1" 200 OK
+INFO:     1.229.150.95:53643 - "GET /todos HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [30507]
+INFO:     Started server process [30594]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Stopping reloader process [30503]
