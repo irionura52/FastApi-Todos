@@ -11,6 +11,7 @@ class TodoItem(BaseModel):
     id: int
     title: str
     description: str
+    dueDate: str
     completed: bool
 
 # JSON 파일 경로

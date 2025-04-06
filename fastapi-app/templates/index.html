@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>To-Do List</title>
   <style>
     :root {
@@ -47,6 +48,10 @@
       margin: 0;
     }
 
+    .sort-buttons {
+      margin: 10px 0;
+    }
+
     .switch {
       position: relative;
       display: inline-block;
@@ -63,7 +68,10 @@
     .slider {
       position: absolute;
       cursor: pointer;
-      top: 0; left: 0; right: 0; bottom: 0;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       background-color: #2196F3;
       transition: .4s;
       border-radius: 34px;
@@ -85,11 +93,11 @@
       border-radius: 50%;
     }
 
-    input:not(:checked) + .slider {
+    input:not(:checked)+.slider {
       background-color: #666;
     }
 
-    input:not(:checked) + .slider:before {
+    input:not(:checked)+.slider:before {
       transform: translateX(42px);
       content: '🌙';
     }
@@ -98,7 +106,8 @@
       margin: 30px 0 20px;
     }
 
-    input[type="text"] {
+    input[type="text"],
+    input[type="date"] {
       padding: 8px;
       margin: 5px;
     }
@@ -152,6 +161,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="header">
     <h1>To-Do List</h1>
@@ -161,9 +171,15 @@
     </label>
   </div>
 
+  <div class="sort-buttons">
+    <button id="sort-date">정렬: 날짜순</button>
+    <button id="sort-alpha">정렬: 가나다순</button>
+  </div>
+
   <form id="todo-form">
     <input type="text" id="title" placeholder="Title" required />
     <input type="text" id="description" placeholder="Description" required />
+    <input type="date" id="due-date" required />
     <button type="submit">Add ➕</button>
   </form>
 
@@ -171,7 +187,6 @@
 
   <script>
     const themeToggle = document.getElementById('theme-toggle');
-
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
       document.body.classList.add('dark-theme');
@@ -191,11 +206,34 @@
       }
     });
 
+    let sortType = 'date'; // 기본 정렬 방식
+
+    document.getElementById('sort-date').addEventListener('click', () => {
+      sortType = 'date';
+      fetchTodos();
+    });
+
+    document.getElementById('sort-alpha').addEventListener('click', () => {
+      sortType = 'alpha';
+      fetchTodos();
+    });
+
     function createActionButton(label, icon, onClick) {
       const btn = document.createElement('button');
       btn.innerHTML = `${label} ${icon}`;
       btn.onclick = onClick;
       return btn;
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return ''; // undefined거나 비어있으면 빈 문자열
+      const date = new Date(dateStr);
+      if (isNaN(date)) return ''; // 날짜 변환 실패 시 빈 문자열
+
+      const yy = String(date.getFullYear()).slice(2);
+      const mm = String(date.getMonth() + 1).padStart(2, '0');
+      const dd = String(date.getDate()).padStart(2, '0');
+      return `${yy}/${mm}/${dd}`;
     }
 
     function createTodoElement(todo) {
@@ -210,20 +248,16 @@
       checkbox.checked = todo.completed;
       checkbox.onchange = async () => {
         const updatedTodo = { ...todo, completed: checkbox.checked };
-        try {
-          await fetch(`/todos/${todo.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updatedTodo)
-          });
-          fetchTodos();
-        } catch (error) {
-          console.error("Failed to update checkbox:", error);
-        }
+        await fetch(`/todos/${todo.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedTodo)
+        });
+        fetchTodos();
       };
 
       const span = document.createElement('span');
-      span.textContent = `${todo.title}: ${todo.description}`;
+      span.textContent = `${todo.title}: ${todo.description} ~~ ${formatDate(todo.dueDate)}`;
 
       left.appendChild(checkbox);
       left.appendChild(span);
@@ -239,6 +273,16 @@
       return li;
     }
 
+    function sortTodos(todos, type = 'date') {
+      switch (type) {
+        case 'alpha':
+          return todos.sort((a, b) => a.title.localeCompare(b.title));
+        case 'date':
+        default:
+          return todos.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+      }
+    }
+
     async function fetchTodos() {
       try {
         const response = await fetch('/todos');
@@ -246,9 +290,10 @@
         const todos = await response.json();
         const todoList = document.getElementById('todo-list');
         todoList.innerHTML = '';
-        todos.forEach(todo => {
+        const sorted = sortTodos(todos, sortType);
+        sorted.forEach(todo => {
           const todoElement = createTodoElement(todo);
-          todoList.appendChild(todoElement);
+          if (todoElement) todoList.appendChild(todoElement);
         });
       } catch (error) {
         console.error("Error fetching todos:", error);
@@ -259,11 +304,13 @@
       event.preventDefault();
       const title = document.getElementById('title').value;
       const description = document.getElementById('description').value;
+      const dueDate = document.getElementById('due-date').value;
 
       const newTodo = {
         id: Date.now(),
         title,
         description,
+        dueDate,
         completed: false
       };
 
@@ -277,6 +324,7 @@
         if (response.ok) {
           document.getElementById('title').value = "";
           document.getElementById('description').value = "";
+          document.getElementById('due-date').value = "";
           fetchTodos();
         } else {
           console.error("Failed to add todo");
@@ -289,17 +337,25 @@
     async function editTodo(todo) {
       const newTitle = prompt("Edit Title:", todo.title);
       const newDescription = prompt("Edit Description:", todo.description);
-      if (!newTitle || !newDescription) {
-        alert("Title or Description is NULL!");
+      const newDueDate = prompt("Edit Due Date (YYYY-MM-DD):", todo.dueDate);
+
+      if (!newTitle || !newDescription || !newDueDate) {
+        alert("Title, Description, or Due Date is missing.");
         return;
       }
 
-      const updatedTodo = { ...todo, title: newTitle, description: newDescription };
+      const updatedTodo = {
+        ...todo,
+        title: newTitle,
+        description: newDescription,
+        dueDate: newDueDate, // ✅ 이게 있어야 날짜 반영됨
+      };
+
       try {
         const response = await fetch(`/todos/${todo.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updatedTodo)
+          body: JSON.stringify(updatedTodo),
         });
 
         if (response.ok) {
@@ -311,6 +367,7 @@
         console.error("Error updating todo:", error);
       }
     }
+
 
     async function deleteTodo(todoId) {
       try {
@@ -331,4 +388,5 @@
     fetchTodos(); // 초기 로드
   </script>
 </body>
+
 </html>
