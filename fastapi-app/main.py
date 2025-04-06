@@ -24,6 +24,7 @@ TODO_FILE = "todo.json"
 def load_todos():
     if not os.path.exists(TODO_FILE):
         save_todos([])  # 파일이 없으면 빈 리스트 저장
+        return []
 
     try:
         with open(TODO_FILE, "r") as file:
@@ -79,6 +80,11 @@ def delete_todo(todo_id: int):
 # HTML 파일 서빙
 @app.get("/", response_class=HTMLResponse)
 def read_root():
-    with open("templates/index.html", "r", encoding="utf-8") as file:
-        content = file.read()
-    return HTMLResponse(content=content)
+    try:
+        with open("templates/index.html", "r", encoding="utf-8") as file:
+            content = file.read()
+        return HTMLResponse(content=content)
+    except FileNotFoundError:
+        return HTMLResponse(content="<h1>Welcome</h1><p>index.html not found</p>", status_code=200)
+
+
