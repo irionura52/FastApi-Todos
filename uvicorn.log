@@ -1,18 +1,35 @@
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-INFO:     Started parent process [30613]
-INFO:     Started server process [30615]
+INFO:     Started parent process [9558]
+INFO:     Started server process [9562]
+INFO:     Started server process [9560]
+INFO:     Waiting for application startup.
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
-INFO:     Started server process [30616]
+INFO:     Application startup complete.
+INFO:     Started server process [9563]
+INFO:     Waiting for application startup.
+INFO:     Started server process [9561]
+INFO:     Application startup complete.
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
-INFO:     Started server process [30618]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-INFO:     Started server process [30617]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-INFO:     1.229.150.95:53654 - "GET / HTTP/1.1" 200 OK
-INFO:     1.229.150.95:53654 - "GET /todos HTTP/1.1" 200 OK
-INFO:     1.229.150.95:53676 - "GET / HTTP/1.1" 200 OK
-INFO:     1.229.150.95:53676 - "GET /todos HTTP/1.1" 200 OK
+INFO:     1.229.150.95:52534 - "GET / HTTP/1.1" 200 OK
+INFO:     1.229.150.95:52534 - "GET /todos HTTP/1.1" 200 OK
+INFO:     1.229.150.95:52534 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     122.117.63.117:43528 - "GET / HTTP/1.0" 200 OK
+INFO:     Received SIGHUP, restarting processes.
+INFO:     Waiting for child process [9560]
+/usr/lib/python3.12/multiprocessing/resource_tracker.py:123: UserWarning: resource_tracker: process died unexpectedly, relaunching.  Some resources might leak.
+  warnings.warn('resource_tracker: process died unexpectedly, '
+INFO:     Waiting for child process [9561]
+INFO:     Waiting for child process [9562]
+INFO:     Waiting for child process [9563]
+INFO:     Received SIGTERM, exiting.
+INFO:     Terminated child process [12386]
+INFO:     Terminated child process [12390]
+INFO:     Terminated child process [12391]
+INFO:     Terminated child process [12395]
+INFO:     Waiting for child process [12386]
+INFO:     Waiting for child process [12390]
+INFO:     Waiting for child process [12391]
+INFO:     Waiting for child process [12395]
+INFO:     Stopping parent process [9558]
