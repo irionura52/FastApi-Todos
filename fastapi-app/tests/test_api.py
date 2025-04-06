@@ -1,7 +1,8 @@
 # fastapi-app/tests/test_api.py
-
+import sys
 import os
 from fastapi.testclient import TestClient
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from main import app, save_todos, TodoItem
 
 client = TestClient(app)
