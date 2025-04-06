@@ -20,13 +20,21 @@ TODO_FILE = "todo.json"
 # JSON 파일에서 To-Do 항목 로드
 def load_todos():
     if not os.path.exists(TODO_FILE):
-        save_todos([])  # 파일이 없으면 빈 리스트 저장
+        save_todos([])
     try:
         with open(TODO_FILE, "r") as file:
-            content = file.read().strip()  # 파일 내용을 읽고 공백 제거
-            return json.loads(content) if content else []  # 내용이 없으면 빈 리스트 반환
+            content = file.read().strip()
+            todos = json.loads(content) if content else []
+
+            # 👇 여기서 null → None, 또는 null 제거
+            for todo in todos:
+                if "dueDate" in todo and todo["dueDate"] is None:
+                    # 삭제하거나 기본값 설정 가능
+                    todo["dueDate"] = "2099-12-31"  # ← default 날짜 설정
+                    # 또는: del todo["dueDate"]  ← 아예 필드 삭제도 가능
+            return todos
     except json.JSONDecodeError:
-        return []  # JSON 형식 오류 시 빈 리스트 반환
+        return []
 
 # JSON 파일에 To-Do 항목 저장
 def save_todos(todos):
