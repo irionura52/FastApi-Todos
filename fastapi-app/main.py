@@ -22,18 +22,21 @@ TODO_FILE = "todo.json"
 
 # JSON 파일에서 To-Do 항목 로드
 def load_todos():
-    if not os.path.exists(TODO_FILE):
-        save_todos([])  # 파일이 없으면 빈 리스트 저장
-        return []
+    todos = []
 
-    try:
-        with open(TODO_FILE, "r") as file:
-            content = file.read().strip()
-            if not content:
-                return []  # 파일은 있는데 내용이 비어 있을 때
-            return json.loads(content)
-    except (json.JSONDecodeError, ValueError):
-        return []  # JSON 파싱 실패 시에도 빈 리스트
+    if os.path.exists(TODO_FILE):
+        try:
+            with open(TODO_FILE, "r", encoding="utf-8") as file:
+                content = file.read().strip()
+                if content:
+                    todos = json.loads(content)
+        except (json.JSONDecodeError, ValueError):
+            pass  # 잘못된 JSON은 무시하고 빈 리스트 유지
+
+    if not isinstance(todos, list):
+        todos = []  # 혹시 이상한 형식일 때 방어코드
+
+    return todos
 
 # JSON 파일에 To-Do 항목 저장
 def save_todos(todos):
