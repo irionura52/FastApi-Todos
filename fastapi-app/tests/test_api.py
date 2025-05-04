@@ -46,7 +46,3 @@ def test_delete_todo():
     get_response = client.get("/todos")
     assert get_response.status_code == 200
     assert get_response.json() == []
-<<<<<<< HEAD
-
-=======
->>>>>>> 171143f0df3718b39ac246d7a2a2f3d10b453982
