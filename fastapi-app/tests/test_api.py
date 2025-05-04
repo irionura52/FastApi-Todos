@@ -8,10 +8,10 @@ from main import app, save_todos, TodoItem
 client = TestClient(app)
 
 def setup_function():
-    save_todos([])  # Å×½ºÆ® Àü ÃÊ±âÈ­
+    save_todos([])  # í…ŒìŠ¤íŠ¸ ì „ ì´ˆê¸°í™”
 
 def teardown_function():
-    save_todos([])  # Å×½ºÆ® ÈÄ Á¤¸®
+    save_todos([])  # í…ŒìŠ¤íŠ¸ í›„ ì •ë¦¬
     if os.path.exists("todo.json"):
         os.remove("todo.json")
     if os.path.exists("templates/index.html"):
@@ -46,4 +46,7 @@ def test_delete_todo():
     get_response = client.get("/todos")
     assert get_response.status_code == 200
     assert get_response.json() == []
+<<<<<<< HEAD
 
+=======
+>>>>>>> 171143f0df3718b39ac246d7a2a2f3d10b453982
