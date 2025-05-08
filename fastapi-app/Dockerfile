@@ -7,14 +7,15 @@ RUN useradd -m myuser
 # 작업 디렉토리 설정
 WORKDIR /app
 
-# 비루트 사용자로 실행
-USER myuser
+# 의존성 설치 (루트 권한으로 설치)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# 필요한 파일 복사 (필요한 파일만 복사하도록 .dockerignore 사용)
+# 소스 코드 복사
 COPY . .
 
-# 의존성 설치
-RUN pip install --no-cache-dir -r requirements.txt
+# 비루트 사용자로 실행
+USER myuser
 
 # FastAPI 서버 실행
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5001"]
