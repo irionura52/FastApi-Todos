@@ -1,10 +1,16 @@
 # Python 3.9 베이스 이미지 사용
 FROM python:3.9
 
+# 비루트 사용자 생성 (보안을 위해)
+RUN useradd -m myuser
+
 # 작업 디렉토리 설정
 WORKDIR /app
 
-# 필요한 파일 복사
+# 비루트 사용자로 실행
+USER myuser
+
+# 필요한 파일 복사 (필요한 파일만 복사하도록 .dockerignore 사용)
 COPY . .
 
 # 의존성 설치

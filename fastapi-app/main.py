@@ -30,11 +30,11 @@ def load_todos():
                 content = file.read().strip()
                 if content:
                     todos = json.loads(content)
-        except (json.JSONDecodeError, ValueError):
+        except json.JSONDecodeError:
             pass  # 잘못된 JSON은 무시하고 빈 리스트 유지
 
     if not isinstance(todos, list):
-        todos = []  # 혹시 이상한 형식일 때 방어코드
+        raise ValueError(f"Expected list, but got {type(todos).__name__}.")  # 예외 발생
 
     return todos
 
