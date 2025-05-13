@@ -4,8 +4,12 @@ from pydantic import BaseModel
 from typing import Optional
 import json
 import os
+#from prometheus_fastapi_instrumentator import Instrumentator
 
 app = FastAPI()
+
+# Prometheus 메트릭스 엔드포인트 (/metrics)
+#Instrumentator().instrument(app).expose(app, endpoint="/metrics")
 
 
 # To-Do 항목 모델
@@ -40,8 +44,8 @@ def load_todos():
 
 # JSON 파일에 To-Do 항목 저장
 def save_todos(todos):
-    with open(TODO_FILE, "w") as file:
-        json.dump(todos, file, indent=4)
+    with open(TODO_FILE, "w", encoding="utf-8") as file:
+        json.dump(todos, file, indent=4, ensure_ascii=False)
 
 
 # To-Do 목록 조회
@@ -85,6 +89,6 @@ def delete_todo(todo_id: int):
 def read_root():
     with open("templates/index.html", "r", encoding="utf-8") as file:
         content = file.read()
-    return HTMLResponse(content=content)
+    return HTMLResponse(content=content, headers={"Content-Type": "text/html; charset=utf-8"})
 
 

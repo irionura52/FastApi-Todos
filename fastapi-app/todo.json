@@ -1,0 +1,51 @@
+[
+    {
+        "id": 1743924577080,
+        "title": "1주차",
+        "description": "과제 완료",
+        "dueDate": "2025-03-14",
+        "completed": true
+    },
+    {
+        "id": 1743924585805,
+        "title": "2주차",
+        "description": "과제 완료",
+        "dueDate": "2025-03-21",
+        "completed": true
+    },
+    {
+        "id": 1743924592885,
+        "title": "3주차",
+        "description": "과제 완료",
+        "dueDate": "2025-03-28",
+        "completed": true
+    },
+    {
+        "id": 1743924603072,
+        "title": "4주차",
+        "description": "과제 완료",
+        "dueDate": "2025-04-04",
+        "completed": true
+    },
+    {
+        "id": 1746538404544,
+        "title": "5주차",
+        "description": "과제 완료",
+        "dueDate": "2025-04-11",
+        "completed": true
+    },
+    {
+        "id": 1746712558282,
+        "title": "9주차",
+        "description": "과제 완료",
+        "dueDate": "2025-05-08",
+        "completed": true
+    },
+    {
+        "id": 1747143697831,
+        "title": "10주차",
+        "description": "과제완료",
+        "dueDate": "2025-05-15",
+        "completed": false
+    }
+]
