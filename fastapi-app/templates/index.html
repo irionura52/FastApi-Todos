@@ -357,7 +357,7 @@
     function sortTodos(todos, type) {
       return type === 'alpha'
         ? todos.sort((a, b) => a.title.localeCompare(b.title))
-        : todos.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+        : todos.sort((a, b) => new Date(b.dueDate) - new Date(a.dueDate));
     }
 
     async function editTodo(todo) {
