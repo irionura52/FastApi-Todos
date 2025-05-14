@@ -219,13 +219,10 @@
           <text x="60" y="68" class="progress-text">0%</text>
         </svg>
       </div>
-
-      <!-- 중앙: 제목 -->
       <div class="title">
         <h1>To-Do List</h1>
         <small>(Made by DoHyun)</small>
       </div>
-
       <!-- 오른쪽: 테마 토글 -->
       <label class="switch">
         <input type="checkbox" id="theme-toggle" checked />
@@ -249,6 +246,8 @@
   <ul id="todo-list"></ul>
 
   <script>
+    const apiBase = window.location.origin;
+
     const themeToggle = document.getElementById('theme-toggle');
     const icon = document.querySelector('.slider .icon');
     const savedTheme = localStorage.getItem('theme');
@@ -314,7 +313,7 @@
       checkbox.checked = todo.completed;
       checkbox.onchange = async () => {
         const updatedTodo = { ...todo, completed: checkbox.checked };
-        await fetch(`/todos/${todo.id}`, {
+        await fetch(`${apiBase}/todos/${todo.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(updatedTodo)
@@ -343,7 +342,7 @@
     }
 
     async function fetchTodos() {
-      const response = await fetch('/todos');
+      const response = await fetch(`${apiBase}/todos`);
       const todos = await response.json();
       const list = document.getElementById('todo-list');
       list.innerHTML = '';
@@ -367,7 +366,7 @@
       if (!newTitle || !newDesc || !newDue) return;
 
       const updated = { ...todo, title: newTitle, description: newDesc, dueDate: newDue };
-      await fetch(`/todos/${todo.id}`, {
+      await fetch(`${apiBase}/todos/${todo.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updated)
@@ -376,7 +375,7 @@
     }
 
     async function deleteTodo(id) {
-      await fetch(`/todos/${id}`, { method: 'DELETE' });
+      await fetch(`${apiBase}/todos/${id}`, { method: 'DELETE' });
       fetchTodos();
     }
 
@@ -394,7 +393,7 @@
       const dueDate = document.getElementById('due-date').value;
       const newTodo = { id: Date.now(), title, description, dueDate, completed: false };
 
-      await fetch('/todos', {
+      await fetch(`${apiBase}/todos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newTodo)
