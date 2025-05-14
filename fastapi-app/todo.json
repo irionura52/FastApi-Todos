@@ -44,8 +44,15 @@
     {
         "id": 1747143697831,
         "title": "10주차",
-        "description": "과제완료",
+        "description": "과제 완료",
         "dueDate": "2025-05-15",
+        "completed": false
+    },
+    {
+        "id": 1747232336732,
+        "title": "11주차",
+        "description": "과제 완료",
+        "dueDate": "2025-05-22",
         "completed": false
     }
 ]

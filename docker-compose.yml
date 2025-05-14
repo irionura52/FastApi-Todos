@@ -8,6 +8,8 @@ services:
     container_name: FastApi-app
     ports:
       - "5001:5001"
+    volumes:
+      - ./fastapi-app/todo.json:/app/todo.json
 
   sonarqube:
     image: sonarqube:latest
