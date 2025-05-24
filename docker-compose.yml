@@ -5,11 +5,33 @@ services:
     build:
       context: ./fastapi-app
       dockerfile: Dockerfile
-    container_name: FastApi-app
+    container_name: fastapi-app
     ports:
       - "5001:5001"
+    networks:
+      - loadtest-net
+
+  jmeter:
+    build:
+      context: ./jmeter
+      dockerfile: Dockerfile
+    container_name: jmeter
     volumes:
-      - ./fastapi-app/todo.json:/app/todo.json
+      - ./jmeter:/jmeter
+    command:
+      - jmeter
+      - -n
+      - -t
+      - /jmeter/fastapi_test_plan.jmx
+      - -l
+      - /jmeter/results.jtl
+      - -JBASE_URL=http://fastapi-app:5001
+      - -Jjmeter.save.saveservice.output_format=csv
+      - -e
+      - -o
+      - /jmeter/report
+    networks:
+      - loadtest-net
 
   sonarqube:
     image: sonarqube:latest
@@ -23,6 +45,8 @@ services:
       - sonarqube_data:/opt/sonarqube/data
       - sonarqube_logs:/opt/sonarqube/logs
       - sonarqube_extensions:/opt/sonarqube/extensions
+    networks:
+      - loadtest-net
 
   prometheus:
     image: prom/prometheus:latest
@@ -31,8 +55,8 @@ services:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "7070:9090"
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
+    networks:
+      - loadtest-net
 
   grafana:
     image: grafana/grafana:latest
@@ -43,26 +67,20 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
       - grafana-data:/var/lib/grafana
+    networks:
+      - loadtest-net
 
   node-exporter:
     image: prom/node-exporter:latest
     container_name: node-exporter
     ports:
       - "7100:9100"
-      
-  cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
-    container_name: cadvisor
-    ports:
-      - "8081:8080"
-    volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:ro
-      - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro
-    command:
-      - "--prometheus_endpoint=/metrics"
-    restart: unless-stopped
+    networks:
+      - loadtest-net
+
+networks:
+  loadtest-net:
+    driver: bridge
 
 volumes:
   sonarqube_conf:
