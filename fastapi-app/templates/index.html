@@ -1,488 +1,483 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>To-Do List</title>
-  <style>
-    :root {
-      --bg-color: #fef6ff;
-      --card-bg: #ffeef5;
-      --text-color: #333;
-      --accent-color: #ff9aa2;
-      --button-bg: #ffd1dc;
-      --button-text: #333;
-      --highlight-border: #ffb3c1;
-      --switch-bg: var(--button-bg);
-      --title-color: #d63384;
-    }
-
-    body.dark-theme {
-      --bg-color: #003366;
-      --card-bg: #004766;
-      --text-color: #ffffff;
-      --accent-color: #80D9FF;
-      --button-bg: #003247;
-      --button-text: #ffffff;
-      --highlight-border: #80D9FF;
-      --switch-bg: #004766;
-      --title-color: #BFECFF;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      margin: 0;
-      padding: 0;
-      transition: background-color 0.3s, color 0.3s;
-    }
-
-    .header {
-      padding: 2rem;
-    }
-
-    .title-container {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 2rem;
-      flex-wrap: wrap;
-    }
-
-    .progress-ring {
-      flex-shrink: 0;
-      width: 250px;
-      height: 250px;
-    }
-
-    .progress-ring-circle-background {
-      fill: none;
-      stroke: #e0e0e0;
-    }
-
-    .progress-ring-circle {
-      fill: none;
-      stroke: var(--accent-color);
-      transition: stroke-dashoffset 0.3s;
-    }
-
-    .progress-text {
-      fill: var(--text-color);
-      dominant-baseline: middle;
-      text-anchor: middle;
-      font-size: 24px;
-      font-weight: bold;
-    }
-
-    .title {
-      text-align: center;
-      min-width: 300px;
-    }
-
-    .title h1 {
-      font-size: 3rem;
-      margin: 0;
-      color: var(--title-color);
-    }
-
-    .title small {
-      display: block;
-      font-size: 1.5rem;
-      margin-top: 0.3rem;
-      color: var(--title-color);
-    }
-
-    .switch {
-      flex-shrink: 0;
-      position: relative;
-      display: inline-block;
-      width: 80px;
-      height: 40px;
-    }
-
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    .slider {
-      position: absolute;
-      background-color: var(--switch-bg);
-      border-radius: 34px;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      transition: background-color 0.4s;
-    }
-
-    .slider .icon {
-      position: absolute;
-      top: 4px;
-      left: 4px;
-      width: 32px;
-      height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: white;
-      border-radius: 50%;
-      font-size: 20px;
-      transition: transform 0.4s;
-    }
-
-    .switch input:not(:checked) + .slider .icon {
-      transform: translateX(40px);
-    }
-
-    .switch input:checked + .slider .icon {
-      transform: translateX(0);
-    }
-
-    .sort-buttons,
-    form {
-      text-align: center;
-      margin: 1rem;
-    }
-
-    button {
-      background-color: var(--button-bg);
-      color: var(--button-text);
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    button:hover {
-      opacity: 0.85;
-    }
-
-    input[type="text"],
-    input[type="date"] {
-      padding: 0.5rem;
-      margin: 0.3rem;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-
-    #stats-cards {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      flex-wrap: wrap;
-      max-width: 1200px;
-      margin: 1rem auto;
-    }
-
-    #todo-lists-wrapper {
-      display: flex;
-      justify-content: space-between;
-      gap: 2rem;
-      max-width: 1200px;
-      margin: 1rem auto;
-      flex-wrap: wrap;
-      border-top: 2px dashed var(--accent-color);
-      padding-top: 1rem;
-    }
-
-    .todo-section {
-      flex: 1;
-      min-width: 300px;
-    }
-
-    .todo-sublist {
-      list-style: none;
-      padding: 0;
-      margin-top: 0.5rem;
-    }
-
-    .todo-item {
-      background-color: var(--card-bg);
-      margin: 0.6rem 0;
-      padding: 0.6rem 1rem;
-      border-radius: 10px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border: 2px solid transparent;
-      font-size: 0.9rem;
-    }
-
-    .todo-item.highlight {
-      border: 2px solid var(--highlight-border);
-    }
-
-    .todo-left {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.2rem;
-    }
-
-    .todo-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .card {
-      background-color: var(--card-bg);
-      color: var(--text-color);
-      padding: 1rem;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-      min-width: 160px;
-      flex: 1;
-      text-align: center;
-      font-size: 0.9rem;
-      font-weight: bold;
-    }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <div class="title-container">
-      <div class="progress-ring">
-        <svg width="250" height="250" viewBox="0 0 120 120">
-          <circle class="progress-ring-circle-background" cx="60" cy="60" r="54" stroke-width="12"></circle>
-          <circle class="progress-ring-circle" cx="60" cy="60" r="54" stroke-width="12" stroke-dasharray="339.292" stroke-dashoffset="0"></circle>
-          <text x="60" y="68" class="progress-text">0%</text>
-        </svg>
-      </div>
-      <div class="title">
-        <h1>To-Do List</h1>
-        <small>(Made by DoHyun)</small>
-      </div>
-      <label class="switch">
-        <input type="checkbox" id="theme-toggle" checked />
-        <span class="slider"><span class="icon">☀️</span></span>
-      </label>
-    </div>
-  </div>
-
-  <div id="stats-cards">
-    <div class="card" id="card-total"></div>
-    <div class="card" id="card-soonest"></div>
-    <div class="card" id="card-week"></div>
-    <div class="card" id="card-today"></div>
-  </div>
-
-  <div class="sort-buttons">
-    <button id="sort-date">Sort by Date</button>
-    <button id="sort-alpha">Sort by Title</button>
-  </div>
-
-  <form id="todo-form">
-    <input type="text" id="title" placeholder="Title" required />
-    <input type="text" id="description" placeholder="Description" required />
-    <input type="date" id="due-date" required />
-    <button type="submit">Add ➕</button>
-  </form>
-
-  <div id="todo-lists-wrapper">
-    <div class="todo-section">
-      <div class="card" id="card-todo"></div>
-      <ul id="incomplete-list" class="todo-sublist"></ul>
-    </div>
-    <div class="todo-section">
-      <div class="card" id="card-done"></div>
-      <ul id="complete-list" class="todo-sublist"></ul>
-    </div>
-  </div>
-
-  <script>
-    const apiBase = window.location.origin;
-
-    const themeToggle = document.getElementById('theme-toggle');
-    const icon = document.querySelector('.slider .icon');
-    const savedTheme = localStorage.getItem('theme');
-
-    function updateThemeIcon() {
-      icon.textContent = document.body.classList.contains('dark-theme') ? '🌙' : '☀️';
-    }
-
-    if (savedTheme === 'dark') {
-      document.body.classList.add('dark-theme');
-      themeToggle.checked = false;
-      updateThemeIcon();
-    }
-
-    themeToggle.addEventListener('change', () => {
-      document.body.classList.toggle('dark-theme');
-      localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
-      updateThemeIcon();
-    });
-
-    let sortType = 'date';
-
-    document.getElementById('sort-date').addEventListener('click', () => {
-      sortType = 'date';
-      fetchTodos();
-    });
-
-    document.getElementById('sort-alpha').addEventListener('click', () => {
-      sortType = 'alpha';
-      fetchTodos();
-    });
-
-    function formatDate(dateStr) {
-      const date = new Date(dateStr);
-      if (isNaN(date)) return '';
-      return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
-    }
-
-    function createTodoElement(todo) {
-      const li = document.createElement('li');
-      li.className = 'todo-item';
-
-      const dueDate = new Date(todo.dueDate);
-      const now = new Date();
-      const diffDays = (dueDate - now) / (1000 * 60 * 60 * 24);
-      if (diffDays >= 0 && diffDays <= 7) {
-        li.classList.add('highlight');
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>To-Do List</title>
+    <style>
+      :root {
+        --bg-color: #fef6ff;
+        --card-bg: #ffeef5;
+        --text-color: #333;
+        --accent-color: #ff9aa2;
+        --button-bg: #ffd1dc;
+        --button-text: #333;
+        --highlight-border: #ffb3c1;
+        --switch-bg: var(--button-bg);
+        --title-color: #d63384;
       }
+      
+      body.dark-theme {
+        --bg-color: #181a1f; 
+        --card-bg: #242531; 
+        --text-color: #ffffff;      
+        --accent-color: #d6c1f5;
+        --button-bg: #cbb9f0; 
+        --button-text: #181a1f;
+        --highlight-border: #e7ddff; 
+        --switch-bg: var(--button-bg);
+        --title-color: #ede6ff; 
+      }
+      
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        margin: 0;
+        padding: 0;
+        transition: background-color 0.3s, color 0.3s;
+      }
+      
+      .header {
+        padding: 2rem;
+      }
+      
+      .title-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+      }
+      
+      .progress-ring {
+        flex-shrink: 0;
+        width: 250px;
+        height: 250px;
+      }
+      
+      .progress-ring-circle-background {
+        fill: none;
+        stroke: #e0e0e0;
+      }
+      
+      .progress-ring-circle {
+        fill: none;
+        stroke: var(--accent-color);
+        transition: stroke-dashoffset 0.3s;
+      }
+      
+      .progress-text {
+        fill: var(--text-color);
+        dominant-baseline: middle;
+        text-anchor: middle;
+        font-size: 24px;
+        font-weight: bold;
+      }
+      
+      .title {
+        text-align: center;
+        min-width: 300px;
+      }
+      
+      .title h1 {
+        font-size: 3rem;
+        margin: 0;
+        color: var(--title-color);
+      }
+      
+      .title small {
+        display: block;
+        font-size: 1.5rem;
+        margin-top: 0.3rem;
+        color: var(--title-color);
+      }
+      
+      .switch {
+        flex-shrink: 0;
+        position: relative;
+        display: inline-block;
+        width: 80px;
+        height: 40px;
+      }
+      
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      
+      .slider {
+        position: absolute;
+        background-color: var(--switch-bg);
+        border-radius: 34px;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        transition: background-color 0.4s;
+      }
+      
+      .slider .icon {
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: white;
+        border-radius: 50%;
+        font-size: 20px;
+        transition: transform 0.4s;
+      }
+      
+      .switch input:not(:checked) + .slider .icon {
+        transform: translateX(40px);
+      }
+      
+      .switch input:checked + .slider .icon {
+        transform: translateX(0);
+      }
+      
+      .sort-buttons,
+      form {
+        text-align: center;
+        margin: 1rem;
+      }
+      
+      button {
+        background-color: var(--button-bg);
+        color: var(--button-text);
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+      
+      button:hover {
+        opacity: 0.85;
+      }
+      
+      input[type='text'],
+      input[type='date'] {
+        padding: 0.5rem;
+        margin: 0.3rem;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+      }
+      
+      #stats-cards {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        max-width: 1200px;
+        margin: 1rem auto;
+      }
+      
+      #todo-lists-wrapper {
+        display: flex;
+        justify-content: space-between;
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 1rem auto;
+        flex-wrap: wrap;
+        border-top: 2px dashed var(--accent-color);
+        padding-top: 1rem;
+      }
+      
+      .todo-section {
+        flex: 1;
+        min-width: 300px;
+      }
+      
+      .todo-sublist {
+        list-style: none;
+        padding: 0;
+        margin-top: 0.5rem;
+      }
+      
+      .todo-item {
+        background-color: var(--card-bg);
+        margin: 0.6rem 0;
+        padding: 0.6rem 1rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 2px solid transparent;
+        font-size: 0.9rem;
+      }
+      
+      .todo-item.highlight {
+        border: 2px solid var(--highlight-border);
+      }
+      
+      .todo-left {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.2rem;
+      }
+      
+      .todo-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      
+      .card {
+        background-color: var(--card-bg);
+        color: var(--text-color);
+        padding: 1rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        min-width: 160px;
+        flex: 1;
+        text-align: center;
+        font-size: 0.9rem;
+        font-weight: bold;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="title-container">
+        <div class="progress-ring">
+          <svg width="250" height="250" viewBox="0 0 120 120">
+            <circle class="progress-ring-circle-background" cx="60" cy="60" r="54" stroke-width="12"></circle>
+            <circle class="progress-ring-circle" cx="60" cy="60" r="54" stroke-width="12" stroke-dasharray="339.292" stroke-dashoffset="0"></circle>
+            <text x="60" y="68" class="progress-text">0%</text>
+          </svg>
+        </div>
+        <div class="title">
+          <h1>To-Do List</h1>
+          <small>(Made by DoHyeon)</small>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="theme-toggle" checked />
+          <span class="slider"><span class="icon">☀️</span></span>
+        </label>
+      </div>
+    </div>
 
-      const left = document.createElement('div');
-      left.className = 'todo-left';
+    <div id="stats-cards">
+      <div class="card" id="card-total"></div>
+      <div class="card" id="card-soonest"></div>
+      <div class="card" id="card-week"></div>
+      <div class="card" id="card-today"></div>
+    </div>
 
-      const span = document.createElement('span');
-      span.textContent = `${todo.title} - ${todo.description} (${formatDate(todo.dueDate)})`;
+    <div class="sort-buttons">
+      <button id="sort-date">Sort by Date</button>
+      <button id="sort-alpha">Sort by Title</button>
+    </div>
 
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.checked = todo.completed;
-      checkbox.onchange = async () => {
-        const updatedTodo = { ...todo, completed: checkbox.checked };
+    <form id="todo-form">
+      <input type="text" id="title" placeholder="Title" required />
+      <input type="text" id="description" placeholder="Description" required />
+      <input type="date" id="due-date" required />
+      <button type="submit">Add ➕</button>
+    </form>
+
+    <div id="todo-lists-wrapper">
+      <div class="todo-section">
+        <div class="card" id="card-todo"></div>
+        <ul id="incomplete-list" class="todo-sublist"></ul>
+      </div>
+      <div class="todo-section">
+        <div class="card" id="card-done"></div>
+        <ul id="complete-list" class="todo-sublist"></ul>
+      </div>
+    </div>
+
+    <script>
+      const apiBase = window.location.origin
+      
+      const themeToggle = document.getElementById('theme-toggle')
+      const icon = document.querySelector('.slider .icon')
+      const savedTheme = localStorage.getItem('theme')
+      
+      function updateThemeIcon() {
+        icon.textContent = document.body.classList.contains('dark-theme') ? '🌙' : '☀️'
+      }
+      
+      if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme')
+        themeToggle.checked = false
+        updateThemeIcon()
+      }
+      
+      themeToggle.addEventListener('change', () => {
+        document.body.classList.toggle('dark-theme')
+        localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light')
+        updateThemeIcon()
+      })
+      
+      let sortType = 'date'
+      
+      document.getElementById('sort-date').addEventListener('click', () => {
+        sortType = 'date'
+        fetchTodos()
+      })
+      
+      document.getElementById('sort-alpha').addEventListener('click', () => {
+        sortType = 'alpha'
+        fetchTodos()
+      })
+      
+      function formatDate(dateStr) {
+        const date = new Date(dateStr)
+        if (isNaN(date)) return ''
+        return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`
+      }
+      
+      function createTodoElement(todo) {
+        const li = document.createElement('li')
+        li.className = 'todo-item'
+      
+        const dueDate = new Date(todo.dueDate)
+        const now = new Date()
+        const diffDays = (dueDate - now) / (1000 * 60 * 60 * 24)
+        if (diffDays >= 0 && diffDays <= 7) {
+          li.classList.add('highlight')
+        }
+      
+        const left = document.createElement('div')
+        left.className = 'todo-left'
+      
+        const span = document.createElement('span')
+        span.textContent = `${todo.title} - ${todo.description} (${formatDate(todo.dueDate)})`
+      
+        const checkbox = document.createElement('input')
+        checkbox.type = 'checkbox'
+        checkbox.checked = todo.completed
+        checkbox.onchange = async () => {
+          const updatedTodo = { ...todo, completed: checkbox.checked }
+          await fetch(`${apiBase}/todos/${todo.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedTodo)
+          })
+          fetchTodos()
+        }
+      
+        left.appendChild(span)
+        left.appendChild(checkbox)
+      
+        const actions = document.createElement('div')
+        actions.className = 'todo-actions'
+        actions.appendChild(createActionButton('Edit ✏️', () => editTodo(todo)))
+        actions.appendChild(createActionButton('Delete 🗑️', () => deleteTodo(todo.id)))
+      
+        li.appendChild(left)
+        li.appendChild(actions)
+        return li
+      }
+      
+      function createActionButton(label, onClick) {
+        const btn = document.createElement('button')
+        btn.textContent = label
+        btn.onclick = onClick
+        return btn
+      }
+      
+      async function fetchTodos() {
+        const response = await fetch(`${apiBase}/todos`)
+        const todos = await response.json()
+      
+        const incompleteList = document.getElementById('incomplete-list')
+        const completeList = document.getElementById('complete-list')
+        incompleteList.innerHTML = ''
+        completeList.innerHTML = ''
+      
+        const sorted = sortTodos(todos, sortType)
+        sorted.forEach((todo) => {
+          const el = createTodoElement(todo)
+          ;(todo.completed ? completeList : incompleteList).appendChild(el)
+        })
+      
+        const completed = todos.filter((t) => t.completed).length
+        const uncompleted = todos.length - completed
+        const now = new Date()
+      
+        const weekItems = todos.filter((t) => {
+          const due = new Date(t.dueDate)
+          const diff = (due - now) / (1000 * 60 * 60 * 24)
+          return diff >= 0 && diff <= 7
+        })
+      
+        const todayItems = todos.filter((t) => {
+          const due = new Date(t.dueDate)
+          return due.toDateString() === now.toDateString()
+        })
+      
+        const soonest = todos.filter((t) => !t.completed).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))[0]
+      
+        updateProgress(todos.length, completed)
+      
+        document.getElementById('card-total').textContent = `Total Tasks: ${todos.length}`
+        document.getElementById('card-todo').textContent = `To Do: ${uncompleted}`
+        document.getElementById('card-done').textContent = `Done: ${completed}`
+        document.getElementById('card-week').textContent = `Due in 7 Days: ${weekItems.length}`
+        document.getElementById('card-today').textContent = `Due Today: ${todayItems.length}`
+        document.getElementById('card-soonest').textContent = soonest ? `Earliest Due: ${soonest.title} (${formatDate(soonest.dueDate)})` : `Earliest Due: None`
+      }
+      
+      function sortTodos(todos, type) {
+        return type === 'alpha' ? todos.sort((a, b) => a.title.localeCompare(b.title)) : todos.sort((a, b) => new Date(b.dueDate) - new Date(a.dueDate))
+      }
+      
+      function updateProgress(total, completed) {
+        const percent = total === 0 ? 0 : (completed / total) * 100
+        const offset = 339.292 - (percent / 100) * 339.292
+        document.querySelector('.progress-ring-circle').style.strokeDashoffset = offset
+        document.querySelector('.progress-text').textContent = `${Math.round(percent)}%`
+      }
+      
+      async function editTodo(todo) {
+        const newTitle = prompt('Edit title:', todo.title)
+        const newDesc = prompt('Edit description:', todo.description)
+        const newDue = prompt('Edit due date:', todo.dueDate)
+        if (!newTitle || !newDesc || !newDue) return
+      
+        const updated = { ...todo, title: newTitle, description: newDesc, dueDate: newDue }
         await fetch(`${apiBase}/todos/${todo.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updatedTodo)
-        });
-        fetchTodos();
-      };
-
-      left.appendChild(span);
-      left.appendChild(checkbox);
-
-      const actions = document.createElement('div');
-      actions.className = 'todo-actions';
-      actions.appendChild(createActionButton('Edit ✏️', () => editTodo(todo)));
-      actions.appendChild(createActionButton('Delete 🗑️', () => deleteTodo(todo.id)));
-
-      li.appendChild(left);
-      li.appendChild(actions);
-      return li;
-    }
-
-    function createActionButton(label, onClick) {
-      const btn = document.createElement('button');
-      btn.textContent = label;
-      btn.onclick = onClick;
-      return btn;
-    }
-
-    async function fetchTodos() {
-      const response = await fetch(`${apiBase}/todos`);
-      const todos = await response.json();
-
-      const incompleteList = document.getElementById('incomplete-list');
-      const completeList = document.getElementById('complete-list');
-      incompleteList.innerHTML = '';
-      completeList.innerHTML = '';
-
-      const sorted = sortTodos(todos, sortType);
-      sorted.forEach(todo => {
-        const el = createTodoElement(todo);
-        (todo.completed ? completeList : incompleteList).appendChild(el);
-      });
-
-      const completed = todos.filter(t => t.completed).length;
-      const uncompleted = todos.length - completed;
-      const now = new Date();
-
-      const weekItems = todos.filter(t => {
-        const due = new Date(t.dueDate);
-        const diff = (due - now) / (1000 * 60 * 60 * 24);
-        return diff >= 0 && diff <= 7;
-      });
-
-      const todayItems = todos.filter(t => {
-        const due = new Date(t.dueDate);
-        return due.toDateString() === now.toDateString();
-      });
-
-      const soonest = todos
-        .filter(t => !t.completed)
-        .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))[0];
-
-      updateProgress(todos.length, completed);
-
-      document.getElementById('card-total').textContent = `Total Tasks: ${todos.length}`;
-      document.getElementById('card-todo').textContent = `To Do: ${uncompleted}`;
-      document.getElementById('card-done').textContent = `Done: ${completed}`;
-      document.getElementById('card-week').textContent = `Due in 7 Days: ${weekItems.length}`;
-      document.getElementById('card-today').textContent = `Due Today: ${todayItems.length}`;
-      document.getElementById('card-soonest').textContent = soonest
-        ? `Earliest Due: ${soonest.title} (${formatDate(soonest.dueDate)})`
-        : `Earliest Due: None`;
-    }
-
-    function sortTodos(todos, type) {
-      return type === 'alpha'
-        ? todos.sort((a, b) => a.title.localeCompare(b.title))
-        : todos.sort((a, b) => new Date(b.dueDate) - new Date(a.dueDate));
-    }
-
-    function updateProgress(total, completed) {
-      const percent = total === 0 ? 0 : (completed / total) * 100;
-      const offset = 339.292 - (percent / 100) * 339.292;
-      document.querySelector('.progress-ring-circle').style.strokeDashoffset = offset;
-      document.querySelector('.progress-text').textContent = `${Math.round(percent)}%`;
-    }
-
-    async function editTodo(todo) {
-      const newTitle = prompt('Edit title:', todo.title);
-      const newDesc = prompt('Edit description:', todo.description);
-      const newDue = prompt('Edit due date:', todo.dueDate);
-      if (!newTitle || !newDesc || !newDue) return;
-
-      const updated = { ...todo, title: newTitle, description: newDesc, dueDate: newDue };
-      await fetch(`${apiBase}/todos/${todo.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updated)
-      });
-      fetchTodos();
-    }
-
-    async function deleteTodo(id) {
-      await fetch(`${apiBase}/todos/${id}`, { method: 'DELETE' });
-      fetchTodos();
-    }
-
-    document.getElementById('todo-form').addEventListener('submit', async e => {
-      e.preventDefault();
-      const title = document.getElementById('title').value;
-      const description = document.getElementById('description').value;
-      const dueDate = document.getElementById('due-date').value;
-      const newTodo = { id: Date.now(), title, description, dueDate, completed: false };
-
-      await fetch(`${apiBase}/todos`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newTodo)
-      });
-
-      e.target.reset();
-      fetchTodos();
-    });
-
-    fetchTodos();
-  </script>
-</body>
+          body: JSON.stringify(updated)
+        })
+        fetchTodos()
+      }
+      
+      async function deleteTodo(id) {
+        await fetch(`${apiBase}/todos/${id}`, { method: 'DELETE' })
+        fetchTodos()
+      }
+      
+      document.getElementById('todo-form').addEventListener('submit', async (e) => {
+        e.preventDefault()
+        const title = document.getElementById('title').value
+        const description = document.getElementById('description').value
+        const dueDate = document.getElementById('due-date').value
+        const newTodo = { id: Date.now(), title, description, dueDate, completed: false }
+      
+        await fetch(`${apiBase}/todos`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newTodo)
+        })
+      
+        e.target.reset()
+        fetchTodos()
+      })
+      
+      fetchTodos()
+    </script>
+  </body>
 </html>
