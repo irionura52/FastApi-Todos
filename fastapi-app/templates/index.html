@@ -38,7 +38,6 @@
       transition: background-color 0.3s, color 0.3s;
     }
 
-    /* 헤더 영역: 제목 중앙에 배치, 좌우에 원형 게이지와 토글 스위치 */
     .header {
       padding: 2rem;
     }
@@ -170,11 +169,35 @@
       border: 1px solid #ccc;
     }
 
-    ul {
+    #stats-cards {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      max-width: 1200px;
+      margin: 1rem auto;
+    }
+
+    #todo-lists-wrapper {
+      display: flex;
+      justify-content: space-between;
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 1rem auto;
+      flex-wrap: wrap;
+      border-top: 2px dashed var(--accent-color);
+      padding-top: 1rem;
+    }
+
+    .todo-section {
+      flex: 1;
+      min-width: 300px;
+    }
+
+    .todo-sublist {
       list-style: none;
       padding: 0;
-      max-width: 600px;
-      margin: 1rem auto;
+      margin-top: 0.5rem;
     }
 
     .todo-item {
@@ -206,12 +229,24 @@
       flex-direction: column;
       gap: 6px;
     }
+
+    .card {
+      background-color: var(--card-bg);
+      color: var(--text-color);
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      min-width: 160px;
+      flex: 1;
+      text-align: center;
+      font-size: 0.9rem;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
   <div class="header">
     <div class="title-container">
-      <!-- 왼쪽: 원형 게이지 -->
       <div class="progress-ring">
         <svg width="250" height="250" viewBox="0 0 120 120">
           <circle class="progress-ring-circle-background" cx="60" cy="60" r="54" stroke-width="12"></circle>
@@ -223,7 +258,6 @@
         <h1>To-Do List</h1>
         <small>(Made by DoHyun)</small>
       </div>
-      <!-- 오른쪽: 테마 토글 -->
       <label class="switch">
         <input type="checkbox" id="theme-toggle" checked />
         <span class="slider"><span class="icon">☀️</span></span>
@@ -231,9 +265,16 @@
     </div>
   </div>
 
+  <div id="stats-cards">
+    <div class="card" id="card-total"></div>
+    <div class="card" id="card-soonest"></div>
+    <div class="card" id="card-week"></div>
+    <div class="card" id="card-today"></div>
+  </div>
+
   <div class="sort-buttons">
-    <button id="sort-date">정렬: 날짜순</button>
-    <button id="sort-alpha">정렬: 가나다순</button>
+    <button id="sort-date">Sort by Date</button>
+    <button id="sort-alpha">Sort by Title</button>
   </div>
 
   <form id="todo-form">
@@ -243,7 +284,16 @@
     <button type="submit">Add ➕</button>
   </form>
 
-  <ul id="todo-list"></ul>
+  <div id="todo-lists-wrapper">
+    <div class="todo-section">
+      <div class="card" id="card-todo"></div>
+      <ul id="incomplete-list" class="todo-sublist"></ul>
+    </div>
+    <div class="todo-section">
+      <div class="card" id="card-done"></div>
+      <ul id="complete-list" class="todo-sublist"></ul>
+    </div>
+  </div>
 
   <script>
     const apiBase = window.location.origin;
@@ -263,13 +313,8 @@
     }
 
     themeToggle.addEventListener('change', () => {
-      if (themeToggle.checked) {
-        document.body.classList.remove('dark-theme');
-        localStorage.setItem('theme', 'light');
-      } else {
-        document.body.classList.add('dark-theme');
-        localStorage.setItem('theme', 'dark');
-      }
+      document.body.classList.toggle('dark-theme');
+      localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
       updateThemeIcon();
     });
 
@@ -344,19 +389,60 @@
     async function fetchTodos() {
       const response = await fetch(`${apiBase}/todos`);
       const todos = await response.json();
-      const list = document.getElementById('todo-list');
-      list.innerHTML = '';
+
+      const incompleteList = document.getElementById('incomplete-list');
+      const completeList = document.getElementById('complete-list');
+      incompleteList.innerHTML = '';
+      completeList.innerHTML = '';
+
       const sorted = sortTodos(todos, sortType);
-      sorted.forEach(todo => list.appendChild(createTodoElement(todo)));
+      sorted.forEach(todo => {
+        const el = createTodoElement(todo);
+        (todo.completed ? completeList : incompleteList).appendChild(el);
+      });
 
       const completed = todos.filter(t => t.completed).length;
+      const uncompleted = todos.length - completed;
+      const now = new Date();
+
+      const weekItems = todos.filter(t => {
+        const due = new Date(t.dueDate);
+        const diff = (due - now) / (1000 * 60 * 60 * 24);
+        return diff >= 0 && diff <= 7;
+      });
+
+      const todayItems = todos.filter(t => {
+        const due = new Date(t.dueDate);
+        return due.toDateString() === now.toDateString();
+      });
+
+      const soonest = todos
+        .filter(t => !t.completed)
+        .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))[0];
+
       updateProgress(todos.length, completed);
+
+      document.getElementById('card-total').textContent = `Total Tasks: ${todos.length}`;
+      document.getElementById('card-todo').textContent = `To Do: ${uncompleted}`;
+      document.getElementById('card-done').textContent = `Done: ${completed}`;
+      document.getElementById('card-week').textContent = `Due in 7 Days: ${weekItems.length}`;
+      document.getElementById('card-today').textContent = `Due Today: ${todayItems.length}`;
+      document.getElementById('card-soonest').textContent = soonest
+        ? `Earliest Due: ${soonest.title} (${formatDate(soonest.dueDate)})`
+        : `Earliest Due: None`;
     }
 
     function sortTodos(todos, type) {
       return type === 'alpha'
         ? todos.sort((a, b) => a.title.localeCompare(b.title))
         : todos.sort((a, b) => new Date(b.dueDate) - new Date(a.dueDate));
+    }
+
+    function updateProgress(total, completed) {
+      const percent = total === 0 ? 0 : (completed / total) * 100;
+      const offset = 339.292 - (percent / 100) * 339.292;
+      document.querySelector('.progress-ring-circle').style.strokeDashoffset = offset;
+      document.querySelector('.progress-text').textContent = `${Math.round(percent)}%`;
     }
 
     async function editTodo(todo) {
@@ -377,13 +463,6 @@
     async function deleteTodo(id) {
       await fetch(`${apiBase}/todos/${id}`, { method: 'DELETE' });
       fetchTodos();
-    }
-
-    function updateProgress(total, completed) {
-      const percent = total === 0 ? 0 : (completed / total) * 100;
-      const offset = 339.292 - (percent / 100) * 339.292;
-      document.querySelector('.progress-ring-circle').style.strokeDashoffset = offset;
-      document.querySelector('.progress-text').textContent = `${Math.round(percent)}%`;
     }
 
     document.getElementById('todo-form').addEventListener('submit', async e => {
