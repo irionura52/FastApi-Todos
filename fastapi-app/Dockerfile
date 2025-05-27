@@ -14,6 +14,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 소스 코드 복사
 COPY . .
 
+RUN chown myuser:myuser /app/todo.json && chmod 664 /app/todo.json
+
 # 비루트 사용자로 실행
 USER myuser
 
