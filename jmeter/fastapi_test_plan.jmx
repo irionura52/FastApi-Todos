@@ -48,7 +48,7 @@
               <elementProp name="" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
                 <stringProp name="Argument.name"></stringProp>
-                <stringProp name="Argument.value">{ "id": 1, "title": "Test Todo", "description": "Generated from JMeter", "dueDate": "2025-06-01", "completed": false }</stringProp>
+                <stringProp name="Argument.value">{ "id": ${__counter(1,true)}, "title": "Test Todo", "description": "Generated from JMeter", "dueDate": "2025-06-01", "completed": false }</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">false</boolProp>
               </elementProp>
