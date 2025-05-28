@@ -1,0 +1,5 @@
+timeStamp,elapsed,label,responseCode,responseMessage,threadName,dataType,success,failureMessage,bytes,sentBytes,grpThreads,allThreads,URL,Latency,IdleTime,Connect
+1748442334320,106,GET /todos,200,OK,Thread Group 1-1,text,true,,1224,125,1,1,http://13.124.50.59:5001/todos,98,0,57
+1748442334441,25,POST /todos,200,OK,Thread Group 1-1,text,true,,233,297,1,1,http://13.124.50.59:5001/todos,25,0,0
+1748442334467,11,PUT /todos/1,200,OK,Thread Group 1-1,text,true,,232,297,1,1,http://13.124.50.59:5001/todos/1,11,0,0
+1748442334479,6,DELETE /todos/1,200,OK,Thread Group 1-1,text,true,,157,213,1,1,http://13.124.50.59:5001/todos/1,5,0,0
