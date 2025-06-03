@@ -1,483 +1,1087 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>To-Do List</title>
-    <style>
-      :root {
-        --bg-color: #fef6ff;
-        --card-bg: #ffeef5;
-        --text-color: #333;
-        --accent-color: #ff9aa2;
-        --button-bg: #ffd1dc;
-        --button-text: #333;
-        --highlight-border: #ffb3c1;
-        --switch-bg: var(--button-bg);
-        --title-color: #d63384;
-      }
-      
-      body.dark-theme {
-        --bg-color: #181a1f; 
-        --card-bg: #242531; 
-        --text-color: #ffffff;      
-        --accent-color: #d6c1f5;
-        --button-bg: #cbb9f0; 
-        --button-text: #181a1f;
-        --highlight-border: #e7ddff; 
-        --switch-bg: var(--button-bg);
-        --title-color: #ede6ff; 
-      }
-      
-      body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: var(--bg-color);
-        color: var(--text-color);
-        margin: 0;
-        padding: 0;
-        transition: background-color 0.3s, color 0.3s;
-      }
-      
-      .header {
-        padding: 2rem;
-      }
-      
-      .title-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 2rem;
-        flex-wrap: wrap;
-      }
-      
-      .progress-ring {
-        flex-shrink: 0;
-        width: 250px;
-        height: 250px;
-      }
-      
-      .progress-ring-circle-background {
-        fill: none;
-        stroke: #e0e0e0;
-      }
-      
-      .progress-ring-circle {
-        fill: none;
-        stroke: var(--accent-color);
-        transition: stroke-dashoffset 0.3s;
-      }
-      
-      .progress-text {
-        fill: var(--text-color);
-        dominant-baseline: middle;
-        text-anchor: middle;
-        font-size: 24px;
-        font-weight: bold;
-      }
-      
-      .title {
-        text-align: center;
-        min-width: 300px;
-      }
-      
-      .title h1 {
-        font-size: 3rem;
-        margin: 0;
-        color: var(--title-color);
-      }
-      
-      .title small {
-        display: block;
-        font-size: 1.5rem;
-        margin-top: 0.3rem;
-        color: var(--title-color);
-      }
-      
-      .switch {
-        flex-shrink: 0;
-        position: relative;
-        display: inline-block;
-        width: 80px;
-        height: 40px;
-      }
-      
-      .switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-      }
-      
-      .slider {
-        position: absolute;
-        background-color: var(--switch-bg);
-        border-radius: 34px;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        transition: background-color 0.4s;
-      }
-      
-      .slider .icon {
-        position: absolute;
-        top: 4px;
-        left: 4px;
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: white;
-        border-radius: 50%;
-        font-size: 20px;
-        transition: transform 0.4s;
-      }
-      
-      .switch input:not(:checked) + .slider .icon {
-        transform: translateX(40px);
-      }
-      
-      .switch input:checked + .slider .icon {
-        transform: translateX(0);
-      }
-      
-      .sort-buttons,
-      form {
-        text-align: center;
-        margin: 1rem;
-      }
-      
-      button {
-        background-color: var(--button-bg);
-        color: var(--button-text);
-        border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: 0.3s;
-      }
-      
-      button:hover {
-        opacity: 0.85;
-      }
-      
-      input[type='text'],
-      input[type='date'] {
-        padding: 0.5rem;
-        margin: 0.3rem;
-        border-radius: 6px;
-        border: 1px solid #ccc;
-      }
-      
-      #stats-cards {
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-        flex-wrap: wrap;
-        max-width: 1200px;
-        margin: 1rem auto;
-      }
-      
-      #todo-lists-wrapper {
-        display: flex;
-        justify-content: space-between;
-        gap: 2rem;
-        max-width: 1200px;
-        margin: 1rem auto;
-        flex-wrap: wrap;
-        border-top: 2px dashed var(--accent-color);
-        padding-top: 1rem;
-      }
-      
-      .todo-section {
-        flex: 1;
-        min-width: 300px;
-      }
-      
-      .todo-sublist {
-        list-style: none;
-        padding: 0;
-        margin-top: 0.5rem;
-      }
-      
-      .todo-item {
-        background-color: var(--card-bg);
-        margin: 0.6rem 0;
-        padding: 0.6rem 1rem;
-        border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border: 2px solid transparent;
-        font-size: 0.9rem;
-      }
-      
-      .todo-item.highlight {
-        border: 2px solid var(--highlight-border);
-      }
-      
-      .todo-left {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.2rem;
-      }
-      
-      .todo-actions {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
-      
-      .card {
-        background-color: var(--card-bg);
-        color: var(--text-color);
-        padding: 1rem;
-        border-radius: 12px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        min-width: 160px;
-        flex: 1;
-        text-align: center;
-        font-size: 0.9rem;
-        font-weight: bold;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-      }
-    </style>
-  </head>
-  <body>
-    <div class="header">
-      <div class="title-container">
-        <div class="progress-ring">
-          <svg width="250" height="250" viewBox="0 0 120 120">
-            <circle class="progress-ring-circle-background" cx="60" cy="60" r="54" stroke-width="12"></circle>
-            <circle class="progress-ring-circle" cx="60" cy="60" r="54" stroke-width="12" stroke-dasharray="339.292" stroke-dashoffset="0"></circle>
-            <text x="60" y="68" class="progress-text">0%</text>
-          </svg>
-        </div>
-        <div class="title">
-          <h1>To-Do List</h1>
-          <small>(Made by DoHyeon)</small>
-        </div>
-        <label class="switch">
-          <input type="checkbox" id="theme-toggle" checked />
-          <span class="slider"><span class="icon">☀️</span></span>
-        </label>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>To-Do List</title>
+  <style>
+    :root {
+      --bg-color: #fef6ff;
+      --card-bg: #ffeef5;
+      --text-color: #333;
+      --accent-color: #ff9aa2;
+      --button-bg: #ffd1dc;
+      --button-text: #333;
+      --highlight-border: #ff8aa2;
+      --overdue-border: #ff6f91;
+      --overdue-bg: rgba(255, 105, 135, 0.1);
+      --switch-bg: var(--button-bg);
+      --title-color: #d63384;
+      --list-bg: #fff6fa;
+      --empty-color: #bdbdbd;
+      --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      --card-shadow: rgba(0, 0, 0, 0.12);
+      --button-hover-text: #fff;
+      --input-invalid-bg: rgba(255, 105, 135, 0.1);
+      --calendar-bg: #fff;
+      --calendar-border: #ddd;
+      --calendar-header-bg: #ffeef5;
+      --calendar-day-bg: #fff6fa;
+      --calendar-text: #333;
+      --task-day-bg: #ffebf0;
+    }
+    body.dark-theme {
+      --bg-color: #181a1f;
+      --card-bg: #242531;
+      --text-color: #ffffff;
+      --accent-color: #d6c1f5;
+      --button-bg: #cbb9f0;
+      --button-text: #181a1f;
+      --highlight-border: #cfaaff;
+      --overdue-border: #ff6f91;
+      --overdue-bg: rgba(255, 105, 135, 0.1);
+      --switch-bg: var(--button-bg);
+      --title-color: #ede6ff;
+      --list-bg: #26253a;
+      --empty-color: #777;
+      --card-shadow: rgba(0, 0, 0, 0.12);
+      --input-invalid-bg: rgba(255, 105, 135, 0.1);
+      --calendar-bg: #333;
+      --calendar-border: #555;
+      --calendar-header-bg: #242531;
+      --calendar-day-bg: #222331;
+      --calendar-text: #fff;
+      --task-day-bg: #442a5a;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: background-color 0.3s, color 0.3s;
+    }
+    header.header {
+      padding: 2rem 1rem 1rem 1rem;
+    }
+    .title-container {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 2rem;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .progress-ring {
+      justify-self: start;
+      width: 260px;
+      height: 260px;
+    }
+    .progress-ring-circle-background {
+      fill: none;
+      stroke: #e0e0e0;
+    }
+    .progress-ring-circle {
+      fill: none;
+      stroke: var(--accent-color);
+      transition: stroke-dashoffset 0.3s;
+    }
+    .progress-text {
+      fill: var(--text-color);
+      dominant-baseline: middle;
+      text-anchor: middle;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .title {
+      justify-self: center;
+      text-align: center;
+    }
+    .title h1 {
+      font-size: 3rem;
+      margin: 0;
+      color: var(--title-color);
+      letter-spacing: 0.5px;
+    }
+    .title small {
+      display: block;
+      font-size: 1.5rem;
+      margin-top: 0.3rem;
+      color: var(--title-color);
+      letter-spacing: 0.3px;
+    }
+    /* ========== 수정: 달력 컨테이너 너비 축소 & 우측 정렬 ========== */
+    .calendar-container {
+      justify-self: end;
+      text-align: center;
+      width: 300px;       /* 달력 너비를 고정 */
+      margin-left: auto;  /* 오른쪽으로 밀기 */
+    }
+    .calendar-header {
+      font-size: 1rem;
+      font-weight: bold;
+      margin-bottom: 0.3rem;
+      color: var(--calendar-text);
+    }
+    .calendar {
+      background: var(--calendar-bg);
+      border: 1px solid var(--calendar-border);
+      border-radius: 8px;
+      padding: 0.5rem;
+      width: 100%;      /* 부모 컨테이너(300px)에 맞춰짐 */
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    .calendar table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      text-align: center;
+    }
+    .calendar th {
+      background: var(--calendar-header-bg);
+      color: var(--calendar-text);
+      padding: 4px 0;
+      font-size: 0.9rem;
+    }
+    .calendar td {
+      background: var(--calendar-day-bg);
+      color: var(--calendar-text);
+      padding: 6px 0;
+      font-size: 0.9rem;
+      border: 1px solid var(--calendar-border);
+      width: 14.28%;
+      height: 30px;
+    }
+    .calendar td.task-day {
+      background: var(--task-day-bg);
+    }
+    .calendar td.empty {
+      background: transparent;
+      border: none;
+    }
+    /* ========== 오늘 날짜 셀 강조 ========== */
+    .calendar td.today {
+      background-color: var(--accent-color);
+      color: var(--calendar-bg);
+      border-radius: 50%;
+      font-weight: bold;
+    }
+
+    .theme-sort-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 80px;
+      height: 40px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      background-color: var(--switch-bg);
+      border-radius: 34px;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      transition: background-color 0.4s;
+    }
+    .slider .icon {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: white;
+      border-radius: 50%;
+      font-size: 20px;
+      transition: transform 0.4s;
+    }
+    .switch input:not(:checked) + .slider .icon {
+      transform: translateX(40px);
+    }
+    .switch input:checked + .slider .icon {
+      transform: translateX(0);
+    }
+
+    /* ========== 수정: Sort 버튼 스타일링 ========== */
+    .sort-buttons button {
+      background-color: var(--button-bg);
+      color: var(--button-text);
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s, color 0.3s, opacity 0.3s;
+      letter-spacing: 0.3px;
+      line-height: 1.4;
+      opacity: 0.85;
+    }
+    .sort-buttons button:hover {
+      background-color: var(--accent-color);
+      color: var(--button-hover-text);
+      opacity: 1;
+    }
+    .sort-buttons button.active {
+      background-color: var(--accent-color);
+      color: var(--button-hover-text);
+      opacity: 1;
+    }
+
+    /* ========== 수정: 카드 영역 스크롤 제거 ========== */
+    #stats-cards {
+      display: flex;
+      gap: 1rem;
+      justify-content: space-between;
+      max-width: 1100px;
+      width: 100%;
+      margin: 1rem auto;
+      overflow-x: visible;
+    }
+    #stats-cards .card {
+      background-color: var(--card-bg);
+      color: var(--text-color);
+      padding: 0.6rem 1rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 4px var(--card-shadow);
+      flex: 1 1 0;      /* 화면이 줄어들면 카드가 유연하게 줄어듦 */
+      min-width: 0;     /* flex 항목이 줄어들 때 최소 폭 제어 */
+      text-align: center;
+      font-size: 0.95rem;
+      font-weight: bold;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      letter-spacing: 0.3px;
+      line-height: 1.4;
+    }
+
+    form#todo-form {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 1rem auto;
+    }
+    form#todo-form input[type='text'],
+    form#todo-form input[type='date'] {
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: 1.5px solid #ccc;
+      font-size: 1rem;
+      transition: border 0.2s, background-color 0.2s;
+      outline: none;
+      background: #fff;
+      color: var(--text-color);
+      letter-spacing: 0.3px;
+      line-height: 1.4;
+      min-width: 120px;
+    }
+    body.dark-theme form#todo-form input[type='text'],
+    body.dark-theme form#todo-form input[type='date'] {
+      background: #222331;
+      color: #fff;
+      border: 1.5px solid #555;
+    }
+    form#todo-form input:focus:invalid {
+      border-color: #ff6f91;
+      background-color: var(--input-invalid-bg);
+    }
+    form#todo-form input:focus:valid {
+      border-color: var(--accent-color);
+    }
+    form#todo-form button[type='submit'] {
+      background-color: var(--button-bg);
+      color: var(--button-text);
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s, color 0.3s, opacity 0.3s;
+      font-size: 1rem;
+      font-family: inherit;
+      letter-spacing: 0.3px;
+      line-height: 1.4;
+      opacity: 0.5;
+    }
+    form#todo-form button[type='submit']:not([disabled]):hover {
+      background-color: var(--accent-color);
+      color: var(--button-hover-text);
+      opacity: 0.92;
+    }
+    form#todo-form button[type='submit']:disabled {
+      cursor: not-allowed;
+    }
+
+    .search-box {
+      width: 100%;
+      max-width: 400px;
+      margin: 0.5rem auto 1rem;
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .search-box input[type='text'] {
+      flex: 1;
+      padding: 0.6rem;
+      border-radius: 6px;
+      border: 1.5px solid #ccc;
+      font-size: 1rem;
+      transition: border 0.2s;
+      outline: none;
+      background: #fff;
+      color: var(--text-color);
+      letter-spacing: 0.3px;
+      line-height: 1.4;
+    }
+    .search-box button {
+      width: 3.2rem;
+      background-color: var(--button-bg);
+      color: var(--button-text);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s, color 0.3s, opacity 0.3s;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .search-box button:hover {
+      background-color: var(--accent-color);
+      color: var(--button-hover-text);
+      opacity: 0.92;
+    }
+
+    #todo-lists-wrapper {
+      display: flex;
+      justify-content: space-between;
+      gap: 2rem;
+      max-width: 1000px;
+      margin: 1.5rem auto 2rem auto;
+      flex-wrap: wrap;
+      border-top: 2px dashed var(--accent-color);
+      padding-top: 1.5rem;
+      background: var(--list-bg);
+      box-shadow: 0 4px 22px 0 rgba(120, 72, 140, 0.08);
+      border-radius: 22px;
+    }
+    .todo-section {
+      flex: 1;
+      min-width: 300px;
+      margin-bottom: 1rem;
+    }
+    .todo-section header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 0.5rem;
+    }
+    .todo-section header h2 {
+      margin: 0;
+      font-size: 1.2rem;
+      color: var(--title-color);
+      letter-spacing: 0.3px;
+      line-height: 1.4;
+    }
+    .todo-sublist {
+      list-style: none;
+      padding: 0 0.5rem;
+      margin-top: 0.5rem;
+      min-height: 48px;
+    }
+    .todo-item {
+      background-color: var(--card-bg);
+      margin: 0.8rem 0;
+      padding: 0.8rem 1rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px var(--card-shadow);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border: 2px solid transparent;
+      font-size: 0.98rem;
+      transition: background 0.2s, color 0.2s, border 0.2s;
+      letter-spacing: 0.3px;
+      line-height: 1.4;
+    }
+    .todo-item.highlight {
+      border-color: var(--highlight-border);
+    }
+    .todo-item.overdue {
+      border-color: var(--overdue-border);
+      background-color: var(--overdue-bg);
+    }
+    .todo-item.completed {
+      opacity: 0.8;
+      color: var(--empty-color);
+      background: linear-gradient(90deg, var(--card-bg) 80%, #eee 100%);
+    }
+    body.dark-theme .todo-item.completed {
+      background: linear-gradient(90deg, var(--card-bg) 85%, #232233 100%);
+      color: var(--empty-color);
+    }
+    .todo-left {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.3rem;
+      flex: 1;
+    }
+    .todo-title {
+      font-weight: bold;
+    }
+    .todo-desc {
+      font-size: 0.95rem;
+    }
+    .todo-date {
+      font-size: 0.85rem;
+      color: var(--empty-color);
+    }
+    .complete-btn {
+      background-color: var(--button-bg);
+      border: 1px solid var(--accent-color);
+      border-radius: 50%;
+      width: 1.8rem;
+      height: 1.8rem;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.3s, color 0.3s, opacity 0.3s;
+    }
+    .complete-btn:hover {
+      background-color: var(--accent-color);
+      color: var(--button-hover-text);
+      opacity: 0.9;
+    }
+    .todo-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      margin-left: 0.6rem;
+    }
+    .todo-actions button {
+      padding: 0.6rem 0.8rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: none;
+      background-color: var(--button-bg);
+      color: var(--button-text);
+      cursor: pointer;
+      transition: background-color 0.3s, color 0.3s, opacity 0.3s;
+      letter-spacing: 0.3px;
+      line-height: 1.4;
+    }
+    .todo-actions button:hover {
+      background-color: var(--accent-color);
+      color: var(--button-hover-text);
+      opacity: 0.92;
+    }
+    .empty-message {
+      color: var(--empty-color);
+      text-align: center;
+      margin: 1.5rem 0 1rem 0;
+      font-size: 1.1rem;
+      font-style: italic;
+      letter-spacing: 0.5px;
+      line-height: 1.5;
+    }
+    .clear-completed-btn {
+      background-color: var(--button-bg);
+      color: var(--button-text);
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s, color 0.3s, opacity 0.3s;
+      font-size: 0.9rem;
+      font-family: inherit;
+      letter-spacing: 0.3px;
+      line-height: 1.4;
+      margin: 0.5rem;
+    }
+    .clear-completed-btn:hover {
+      background-color: var(--accent-color);
+      color: var(--button-hover-text);
+      opacity: 0.92;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="title-container">
+      <div class="progress-ring">
+        <svg width="260" height="260" viewBox="0 0 120 120">
+          <circle
+            class="progress-ring-circle-background"
+            cx="60"
+            cy="60"
+            r="54"
+            stroke-width="12"
+          ></circle>
+          <circle
+            class="progress-ring-circle"
+            cx="60"
+            cy="60"
+            r="54"
+            stroke-width="12"
+            stroke-dasharray="339.292"
+            stroke-dashoffset="0"
+          ></circle>
+          <text x="60" y="68" class="progress-text">0%</text>
+        </svg>
+      </div>
+      <div class="title">
+        <h1>To-Do List</h1>
+        <small>(Made by DoHyeon)</small>
+      </div>
+      <div class="calendar-container">
+        <div class="calendar-header" id="calendar-header"></div>
+        <div class="calendar" id="calendar"></div>
       </div>
     </div>
+    <div class="theme-sort-container">
+      <label class="switch">
+        <input
+          type="checkbox"
+          id="theme-toggle"
+          checked
+          aria-label="Toggle Dark/Light Theme"
+        />
+        <span class="slider"><span class="icon">☀️</span></span>
+      </label>
+      <div class="sort-buttons">
+        <button id="sort-date" class="active">Sort by Date</button>
+        <button id="sort-alpha">Sort by Title</button>
+      </div>
+    </div>
+  </header>
 
-    <div id="stats-cards">
+  <main>
+    <section id="stats-cards">
       <div class="card" id="card-total"></div>
       <div class="card" id="card-soonest"></div>
       <div class="card" id="card-week"></div>
       <div class="card" id="card-today"></div>
-    </div>
+    </section>
 
-    <div class="sort-buttons">
-      <button id="sort-date">Sort by Date</button>
-      <button id="sort-alpha">Sort by Title</button>
-    </div>
+    <section>
+      <form id="todo-form" autocomplete="off" novalidate>
+        <input
+          type="text"
+          id="title"
+          name="title"
+          placeholder="Title"
+          required
+          minlength="1"
+          maxlength="30"
+        />
+        <input
+          type="text"
+          id="description"
+          name="description"
+          placeholder="Description"
+          required
+          minlength="1"
+          maxlength="50"
+        />
+        <input type="date" id="due-date" name="dueDate" required />
+        <button type="submit" disabled>Add ➕</button>
+      </form>
+    </section>
 
-    <form id="todo-form">
-      <input type="text" id="title" placeholder="Title" required />
-      <input type="text" id="description" placeholder="Description" required />
-      <input type="date" id="due-date" required />
-      <button type="submit">Add ➕</button>
-    </form>
+    <section class="search-box">
+      <input
+        type="text"
+        id="search-input"
+        placeholder="검색어 입력…"
+        aria-label="Search todos"
+      />
+      <button id="search-btn" aria-label="Search">🔍</button>
+    </section>
 
-    <div id="todo-lists-wrapper">
-      <div class="todo-section">
-        <div class="card" id="card-todo"></div>
+    <section id="todo-lists-wrapper">
+      <div class="todo-section" aria-labelledby="incomplete-heading">
+        <header>
+          <h2 id="incomplete-heading">To Do (0)</h2>
+        </header>
         <ul id="incomplete-list" class="todo-sublist"></ul>
+        <div class="empty-message" id="empty-incomplete" style="display: none;">
+          할 일이 없습니다!
+        </div>
       </div>
-      <div class="todo-section">
-        <div class="card" id="card-done"></div>
-        <ul id="complete-list" class="todo-sublist"></ul>
-      </div>
-    </div>
 
-    <script>
-      const apiBase = window.location.origin
-      
-      const themeToggle = document.getElementById('theme-toggle')
-      const icon = document.querySelector('.slider .icon')
-      const savedTheme = localStorage.getItem('theme')
-      
-      function updateThemeIcon() {
-        icon.textContent = document.body.classList.contains('dark-theme') ? '🌙' : '☀️'
-      }
-      
-      if (savedTheme === 'dark') {
-        document.body.classList.add('dark-theme')
-        themeToggle.checked = false
-        updateThemeIcon()
-      }
-      
-      themeToggle.addEventListener('change', () => {
-        document.body.classList.toggle('dark-theme')
-        localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light')
-        updateThemeIcon()
-      })
-      
-      let sortType = 'date'
-      
-      document.getElementById('sort-date').addEventListener('click', () => {
-        sortType = 'date'
-        fetchTodos()
-      })
-      
-      document.getElementById('sort-alpha').addEventListener('click', () => {
-        sortType = 'alpha'
-        fetchTodos()
-      })
-      
-      function formatDate(dateStr) {
-        const date = new Date(dateStr)
-        if (isNaN(date)) return ''
-        return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`
-      }
-      
-      function createTodoElement(todo) {
-        const li = document.createElement('li')
-        li.className = 'todo-item'
-      
-        const dueDate = new Date(todo.dueDate)
-        const now = new Date()
-        const diffDays = (dueDate - now) / (1000 * 60 * 60 * 24)
-        if (diffDays >= 0 && diffDays <= 7) {
-          li.classList.add('highlight')
+      <div class="todo-section" aria-labelledby="complete-heading">
+        <header>
+          <h2 id="complete-heading">Done (0)</h2>
+          <button
+            class="clear-completed-btn"
+            id="clear-completed"
+            aria-label="Clear All Completed Todos"
+          >
+            완료 항목 모두 지우기
+          </button>
+        </header>
+        <ul id="complete-list" class="todo-sublist"></ul>
+        <div class="empty-message" id="empty-complete" style="display: none;">
+          완료된 할 일이 없습니다!
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const apiBase = window.location.origin;
+
+    // ---------------- 달력 생성 함수 (generateCalendar) ----------------
+    function generateCalendar(year, month, taskDates) {
+      const calendarDiv = document.getElementById('calendar');
+      const headerDiv = document.getElementById('calendar-header');
+      headerDiv.textContent = `${year}년 ${month + 1}월`;
+      calendarDiv.innerHTML = '';
+      const tbl = document.createElement('table');
+      const headerRow = document.createElement('tr');
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      days.forEach((d) => {
+        const th = document.createElement('th');
+        th.textContent = d;
+        headerRow.appendChild(th);
+      });
+      tbl.appendChild(headerRow);
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const lastDate = new Date(year, month + 1, 0).getDate();
+      let date = 1;
+
+      // 오늘 날짜 정보
+      const today = new Date();
+      const todayYear = today.getFullYear();
+      const todayMonth = today.getMonth();
+      const todayDate = today.getDate();
+
+      for (let i = 0; i < 6; i++) {
+        const row = document.createElement('tr');
+        for (let j = 0; j < 7; j++) {
+          const cell = document.createElement('td');
+          if (i === 0 && j < firstDay) {
+            cell.className = 'empty';
+            cell.textContent = '';
+          } else if (date > lastDate) {
+            cell.className = 'empty';
+            cell.textContent = '';
+          } else {
+            /* 날짜 표시 */
+            cell.textContent = date;
+
+            /* 할 일 있는 날 표시 (기존 taskDates 로직) */
+            const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(
+              date
+            ).padStart(2, '0')}`;
+            if (taskDates.has(dateKey)) {
+              cell.classList.add('task-day');
+            }
+
+            /* 오늘 날짜 강조 */
+            if (
+              year === todayYear &&
+              month === todayMonth &&
+              date === todayDate
+            ) {
+              cell.classList.add('today');
+            }
+
+            date++;
+          }
+          row.appendChild(cell);
         }
-      
-        const left = document.createElement('div')
-        left.className = 'todo-left'
-      
-        const span = document.createElement('span')
-        span.textContent = `${todo.title} - ${todo.description} (${formatDate(todo.dueDate)})`
-      
-        const checkbox = document.createElement('input')
-        checkbox.type = 'checkbox'
-        checkbox.checked = todo.completed
-        checkbox.onchange = async () => {
-          const updatedTodo = { ...todo, completed: checkbox.checked }
-          await fetch(`${apiBase}/todos/${todo.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(updatedTodo)
-          })
-          fetchTodos()
-        }
-      
-        left.appendChild(span)
-        left.appendChild(checkbox)
-      
-        const actions = document.createElement('div')
-        actions.className = 'todo-actions'
-        actions.appendChild(createActionButton('Edit ✏️', () => editTodo(todo)))
-        actions.appendChild(createActionButton('Delete 🗑️', () => deleteTodo(todo.id)))
-      
-        li.appendChild(left)
-        li.appendChild(actions)
-        return li
+        tbl.appendChild(row);
+        if (date > lastDate) break;
       }
-      
-      function createActionButton(label, onClick) {
-        const btn = document.createElement('button')
-        btn.textContent = label
-        btn.onclick = onClick
-        return btn
+      calendarDiv.appendChild(tbl);
+    }
+
+    // 초기 달력 세팅 (현재 연월)
+    let currentYear = new Date().getFullYear();
+    let currentMonth = new Date().getMonth();
+    let globalTaskDates = new Set();
+    generateCalendar(currentYear, currentMonth, globalTaskDates);
+
+    // ---------------- 테마 토글 ----------------
+    const themeToggle = document.getElementById('theme-toggle');
+    const icon = document.querySelector('.slider .icon');
+    const savedTheme = localStorage.getItem('theme');
+
+    function updateThemeIcon() {
+      icon.textContent = document.body.classList.contains('dark-theme')
+        ? '🌙'
+        : '☀️';
+    }
+    if (savedTheme === 'dark') {
+      document.body.classList.add('dark-theme');
+      themeToggle.checked = false;
+      updateThemeIcon();
+    }
+    themeToggle.addEventListener('change', () => {
+      document.body.classList.toggle('dark-theme');
+      localStorage.setItem(
+        'theme',
+        document.body.classList.contains('dark-theme') ? 'dark' : 'light'
+      );
+      updateThemeIcon();
+    });
+
+    // ---------------- Sort 버튼 로직 ----------------
+    let sortType = 'date';
+    const sortDateBtn = document.getElementById('sort-date');
+    const sortAlphaBtn = document.getElementById('sort-alpha');
+
+    sortDateBtn.addEventListener('click', () => {
+      sortType = 'date';
+      sortDateBtn.classList.add('active');
+      sortAlphaBtn.classList.remove('active');
+      fetchTodos();
+    });
+    sortAlphaBtn.addEventListener('click', () => {
+      sortType = 'alpha';
+      sortAlphaBtn.classList.add('active');
+      sortDateBtn.classList.remove('active');
+      fetchTodos();
+    });
+
+    // ---------------- 폼 입력 유효성 및 전송 버튼 활성화 ----------------
+    const titleInput = document.getElementById('title');
+    const descriptionInput = document.getElementById('description');
+    const dueDateInput = document.getElementById('due-date');
+    const submitBtn = document.querySelector('#todo-form button[type="submit"]');
+
+    function updateSubmitState() {
+      const isValid =
+        titleInput.checkValidity() &&
+        descriptionInput.checkValidity() &&
+        dueDateInput.checkValidity();
+      submitBtn.disabled = !isValid;
+      submitBtn.style.opacity = isValid ? '1' : '0.5';
+    }
+    [titleInput, descriptionInput, dueDateInput].forEach((input) => {
+      input.addEventListener('input', updateSubmitState);
+    });
+    updateSubmitState();
+
+    // 날짜 포맷 (위클리 요일 포함)
+    function formatDate(dateStr) {
+      const dateObj = new Date(dateStr);
+      if (isNaN(dateObj)) return '';
+      const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const w = weekdays[dateObj.getDay()];
+      const YYYY = dateObj.getFullYear();
+      const MM = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const DD = String(dateObj.getDate()).padStart(2, '0');
+      return `${YYYY}/${MM}/${DD} (${w})`;
+    }
+
+    // D-day 계산
+    function calculateDday(dateStr) {
+      const due = new Date(dateStr);
+      const now = new Date();
+      const diff = Math.ceil((due - now) / (1000 * 60 * 60 * 24));
+      if (diff >= 0) return `D-${diff}`;
+      else return `D+${Math.abs(diff)}`;
+    }
+
+    // Todo 아이템 엘리먼트 생성
+    function createTodoElement(todo) {
+      const li = document.createElement('li');
+      li.className = 'todo-item';
+      if (todo.completed) li.classList.add('completed');
+
+      const due = new Date(todo.dueDate);
+      const now = new Date();
+      const diffDays = (due - now) / (1000 * 60 * 60 * 24);
+
+      if (!todo.completed && diffDays < 0) {
+        li.classList.add('overdue');
+      } else if (!todo.completed && diffDays <= 7) {
+        li.classList.add('highlight');
       }
-      
-      async function fetchTodos() {
-        const response = await fetch(`${apiBase}/todos`)
-        const todos = await response.json()
-      
-        const incompleteList = document.getElementById('incomplete-list')
-        const completeList = document.getElementById('complete-list')
-        incompleteList.innerHTML = ''
-        completeList.innerHTML = ''
-      
-        const sorted = sortTodos(todos, sortType)
-        sorted.forEach((todo) => {
-          const el = createTodoElement(todo)
-          ;(todo.completed ? completeList : incompleteList).appendChild(el)
-        })
-      
-        const completed = todos.filter((t) => t.completed).length
-        const uncompleted = todos.length - completed
-        const now = new Date()
-      
-        const weekItems = todos.filter((t) => {
-          const due = new Date(t.dueDate)
-          const diff = (due - now) / (1000 * 60 * 60 * 24)
-          return diff >= 0 && diff <= 7
-        })
-      
-        const todayItems = todos.filter((t) => {
-          const due = new Date(t.dueDate)
-          return due.toDateString() === now.toDateString()
-        })
-      
-        const soonest = todos.filter((t) => !t.completed).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))[0]
-      
-        updateProgress(todos.length, completed)
-      
-        document.getElementById('card-total').textContent = `Total Tasks: ${todos.length}`
-        document.getElementById('card-todo').textContent = `To Do: ${uncompleted}`
-        document.getElementById('card-done').textContent = `Done: ${completed}`
-        document.getElementById('card-week').textContent = `Due in 7 Days: ${weekItems.length}`
-        document.getElementById('card-today').textContent = `Due Today: ${todayItems.length}`
-        document.getElementById('card-soonest').textContent = soonest ? `Earliest Due: ${soonest.title} (${formatDate(soonest.dueDate)})` : `Earliest Due: None`
-      }
-      
-      function sortTodos(todos, type) {
-        return type === 'alpha' ? todos.sort((a, b) => a.title.localeCompare(b.title)) : todos.sort((a, b) => new Date(b.dueDate) - new Date(a.dueDate))
-      }
-      
-      function updateProgress(total, completed) {
-        const percent = total === 0 ? 0 : (completed / total) * 100
-        const offset = 339.292 - (percent / 100) * 339.292
-        document.querySelector('.progress-ring-circle').style.strokeDashoffset = offset
-        document.querySelector('.progress-text').textContent = `${Math.round(percent)}%`
-      }
-      
-      async function editTodo(todo) {
-        const newTitle = prompt('Edit title:', todo.title)
-        const newDesc = prompt('Edit description:', todo.description)
-        const newDue = prompt('Edit due date:', todo.dueDate)
-        if (!newTitle || !newDesc || !newDue) return
-      
-        const updated = { ...todo, title: newTitle, description: newDesc, dueDate: newDue }
+
+      const left = document.createElement('div');
+      left.className = 'todo-left';
+
+      // Title
+      const titleSpan = document.createElement('span');
+      titleSpan.className = 'todo-title';
+      titleSpan.textContent = todo.title;
+
+      // Description
+      const descSpan = document.createElement('span');
+      descSpan.className = 'todo-desc';
+      descSpan.textContent = todo.description;
+
+      // Due date
+      const dateSpan = document.createElement('span');
+      dateSpan.className = 'todo-date';
+      dateSpan.textContent = formatDate(todo.dueDate);
+
+      // Complete 버튼
+      const completeBtn = document.createElement('button');
+      completeBtn.className = 'complete-btn';
+      completeBtn.setAttribute(
+        'aria-label',
+        todo.completed
+          ? `Mark "${todo.title}" as incomplete`
+          : `Mark "${todo.title}" as complete`
+      );
+      completeBtn.textContent = todo.completed ? '✅' : '⭕';
+      completeBtn.onclick = async () => {
+        const updatedTodo = { ...todo, completed: !todo.completed };
         await fetch(`${apiBase}/todos/${todo.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updated)
-        })
-        fetchTodos()
+          body: JSON.stringify(updatedTodo),
+        });
+        fetchTodos();
+      };
+
+      left.appendChild(titleSpan);
+      left.appendChild(descSpan);
+      left.appendChild(dateSpan);
+      left.appendChild(completeBtn);
+
+      const actions = document.createElement('div');
+      actions.className = 'todo-actions';
+      // Edit 버튼
+      const editBtn = document.createElement('button');
+      editBtn.textContent = 'Edit ✏️';
+      editBtn.setAttribute('aria-label', `Edit task: ${todo.title}`);
+      editBtn.onclick = () => editTodo(todo);
+      // Delete 버튼
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = 'Delete 🗑️';
+      deleteBtn.setAttribute('aria-label', `Delete task: ${todo.title}`);
+      deleteBtn.onclick = () => deleteTodo(todo.id);
+
+      actions.appendChild(editBtn);
+      actions.appendChild(deleteBtn);
+
+      li.appendChild(left);
+      li.appendChild(actions);
+      return li;
+    }
+
+    // 모든 todos 가져와서 렌더링
+    async function fetchTodos() {
+      let response = await fetch(`${apiBase}/todos`);
+      let todos = await response.json();
+
+      // Search 필터 적용
+      const keyword = document.getElementById('search-input').value.toLowerCase();
+      if (keyword) {
+        todos = todos.filter(
+          (t) =>
+            t.title.toLowerCase().includes(keyword) ||
+            t.description.toLowerCase().includes(keyword)
+        );
       }
-      
-      async function deleteTodo(id) {
-        await fetch(`${apiBase}/todos/${id}`, { method: 'DELETE' })
-        fetchTodos()
+
+      const incompleteList = document.getElementById('incomplete-list');
+      const completeList = document.getElementById('complete-list');
+      incompleteList.innerHTML = '';
+      completeList.innerHTML = '';
+
+      // 정렬
+      const sorted =
+        sortType === 'alpha'
+          ? todos.sort((a, b) => a.title.localeCompare(b.title))
+          : todos.sort((a, b) => new Date(b.dueDate) - new Date(a.dueDate));
+
+      let hasIncomplete = false,
+        hasComplete = false;
+      sorted.forEach((todo) => {
+        const el = createTodoElement(todo);
+        if (todo.completed) {
+          completeList.appendChild(el);
+          hasComplete = true;
+        } else {
+          incompleteList.appendChild(el);
+          hasIncomplete = true;
+        }
+      });
+
+      document.getElementById('empty-incomplete').style.display = hasIncomplete ? 'none' : '';
+      document.getElementById('empty-complete').style.display = hasComplete ? 'none' : '';
+
+      const completedCount = todos.filter((t) => t.completed).length;
+      const uncompletedCount = todos.length - completedCount;
+
+      // 섹션 제목에 개수 업데이트
+      document.getElementById(
+        'incomplete-heading'
+      ).textContent = `To Do (${uncompletedCount})`;
+      document.getElementById('complete-heading').textContent = `Done (${completedCount})`;
+
+      const weekItems = todos.filter((t) => {
+        const dueD = new Date(t.dueDate);
+        const diff = (dueD - new Date()) / (1000 * 60 * 60 * 24);
+        return diff >= 0 && diff <= 7;
+      });
+      const todayItems = todos.filter((t) => {
+        const dueD = new Date(t.dueDate);
+        return dueD.toDateString() === new Date().toDateString();
+      });
+      const soonest = todos
+        .filter((t) => !t.completed)
+        .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))[0];
+
+      updateProgress(todos.length, completedCount);
+
+      document.getElementById('card-total').textContent = `Total Tasks: ${todos.length}`;
+      if (soonest) {
+        const ddayText = calculateDday(soonest.dueDate);
+        document.getElementById(
+          'card-soonest'
+        ).textContent = `Earliest Due: ${soonest.title} (${ddayText})`;
+      } else {
+        document.getElementById('card-soonest').textContent = `Earliest Due: None`;
       }
-      
-      document.getElementById('todo-form').addEventListener('submit', async (e) => {
-        e.preventDefault()
-        const title = document.getElementById('title').value
-        const description = document.getElementById('description').value
-        const dueDate = document.getElementById('due-date').value
-        const newTodo = { id: Date.now(), title, description, dueDate, completed: false }
-      
-        await fetch(`${apiBase}/todos`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newTodo)
-        })
-      
-        e.target.reset()
-        fetchTodos()
-      })
-      
-      fetchTodos()
-    </script>
-  </body>
+      document.getElementById(
+        'card-week'
+      ).textContent = `Due in 7 Days: ${weekItems.length}`;
+      document.getElementById(
+        'card-today'
+      ).textContent = `Due Today: ${todayItems.length}`;
+
+      // 현재 달력에 맞춰 taskDates 업데이트
+      globalTaskDates.clear();
+      todos.forEach((t) => {
+        const dt = new Date(t.dueDate);
+        if (dt.getFullYear() === currentYear && dt.getMonth() === currentMonth) {
+          const key = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(
+            dt.getDate()
+          ).padStart(2, '0')}`;
+          globalTaskDates.add(key);
+        }
+      });
+      generateCalendar(currentYear, currentMonth, globalTaskDates);
+    }
+
+    function updateProgress(total, completed) {
+      const percent = total === 0 ? 0 : (completed / total) * 100;
+      const offset = 339.292 - (percent / 100) * 339.292;
+      document.querySelector('.progress-ring-circle').style.strokeDashoffset = offset;
+      document.querySelector('.progress-text').textContent = `${Math.round(percent)}%`;
+    }
+
+    // Edit 기능
+    async function editTodo(todo) {
+      const newTitle = prompt('Edit title:', todo.title);
+      if (newTitle === null) return;
+      const newDesc = prompt('Edit description:', todo.description);
+      if (newDesc === null) return;
+      let newDue = prompt(
+        'Edit due date (YYYY-MM-DD):',
+        todo.dueDate ? todo.dueDate.slice(0, 10) : ''
+      );
+      if (newDue === null) return;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(newDue)) {
+        alert('날짜 형식이 올바르지 않습니다 (YYYY-MM-DD)');
+        return;
+      }
+      const updated = { ...todo, title: newTitle, description: newDesc, dueDate: newDue };
+      await fetch(`${apiBase}/todos/${todo.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated),
+      });
+      fetchTodos();
+    }
+
+    // Delete 기능
+    async function deleteTodo(id) {
+      if (!confirm('정말 삭제할까요?')) return;
+      await fetch(`${apiBase}/todos/${id}`, { method: 'DELETE' });
+      fetchTodos();
+    }
+
+    // Form 제출
+    const form = document.getElementById('todo-form');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (
+        !titleInput.checkValidity() ||
+        !descriptionInput.checkValidity() ||
+        !dueDateInput.checkValidity()
+      ) {
+        [titleInput, descriptionInput, dueDateInput].forEach((input) => {
+          if (!input.checkValidity()) input.style.borderColor = '#ff6f91';
+          else input.style.borderColor = '';
+        });
+        return;
+      }
+      [titleInput, descriptionInput, dueDateInput].forEach((input) => (input.style.borderColor = ''));
+      const newTodo = {
+        id: Date.now(),
+        title: titleInput.value,
+        description: descriptionInput.value,
+        dueDate: dueDateInput.value,
+        completed: false,
+      };
+      await fetch(`${apiBase}/todos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newTodo),
+      });
+      e.target.reset();
+      updateSubmitState();
+      fetchTodos();
+    });
+
+    // Search 기능
+    document.getElementById('search-btn').addEventListener('click', () => {
+      fetchTodos();
+    });
+    document.getElementById('search-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        fetchTodos();
+      }
+    });
+
+    // Clear All Completed
+    async function clearCompleted() {
+      if (!confirm('완료된 모든 할 일을 삭제할까요?')) return;
+      const response = await fetch(`${apiBase}/todos`);
+      const todos = await response.json();
+      const completed = todos.filter((t) => t.completed);
+      await Promise.all(
+        completed.map((t) =>
+          fetch(`${apiBase}/todos/${t.id}`, {
+            method: 'DELETE',
+          })
+        )
+      );
+      fetchTodos();
+    }
+    document.getElementById('clear-completed').addEventListener('click', clearCompleted);
+
+    // 초기 렌더링
+    fetchTodos();
+  </script>
+</body>
 </html>

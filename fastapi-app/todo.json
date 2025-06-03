@@ -60,13 +60,20 @@
         "title": "12주차",
         "description": "과제 완료",
         "dueDate": "2025-05-29",
-        "completed": false
+        "completed": true
     },
     {
         "id": 1748236573022,
         "title": "13주차",
         "description": "과제 완료",
         "dueDate": "2025-06-05",
+        "completed": false
+    },
+    {
+        "id": 1748952848605,
+        "title": "14주차",
+        "description": "과제 완료",
+        "dueDate": "2025-06-12",
         "completed": false
     }
 ]
