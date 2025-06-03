@@ -133,7 +133,7 @@ $(document).ready(function() {
         widgets: ['zebra']
     });
 
-    var data = {"OkPercent": 76.0, "KoPercent": 24.0};
+    var data = {"OkPercent": 76.25, "KoPercent": 23.75};
     var dataset = [
         {
             "label" : "FAIL",
@@ -173,7 +173,7 @@ $(document).ready(function() {
     });
 
     // Creates APDEX table
-    createTable($("#apdexTable"), {"supportsControllersDiscrimination": true, "overall": {"data": [0.76, 500, 1500, "Total"], "isController": false}, "titles": ["Apdex", "T (Toleration threshold)", "F (Frustration threshold)", "Label"], "items": [{"data": [1.0, 500, 1500, "DELETE /todos/1"], "isController": false}, {"data": [0.04, 500, 1500, "PUT /todos/1"], "isController": false}, {"data": [1.0, 500, 1500, "POST /todos"], "isController": false}, {"data": [1.0, 500, 1500, "GET /todos"], "isController": false}]}, function(index, item){
+    createTable($("#apdexTable"), {"supportsControllersDiscrimination": true, "overall": {"data": [0.7625, 500, 1500, "Total"], "isController": false}, "titles": ["Apdex", "T (Toleration threshold)", "F (Frustration threshold)", "Label"], "items": [{"data": [1.0, 500, 1500, "DELETE /todos/1"], "isController": false}, {"data": [0.05, 500, 1500, "PUT /todos/1"], "isController": false}, {"data": [1.0, 500, 1500, "POST /todos"], "isController": false}, {"data": [1.0, 500, 1500, "GET /todos"], "isController": false}]}, function(index, item){
         switch(index){
             case 0:
                 item = item.toFixed(3);
@@ -187,7 +187,7 @@ $(document).ready(function() {
     }, [[0, 0]], 3);
 
     // Create statistics table
-    createTable($("#statisticsTable"), {"supportsControllersDiscrimination": true, "overall": {"data": ["Total", 400, 96, 24.0, 13.875, 2, 62, 12.0, 23.0, 27.0, 40.97000000000003, 383.8771593090211, 107.97201145633397, 87.43327135316699], "isController": false}, "titles": ["Label", "#Samples", "FAIL", "Error %", "Average", "Min", "Max", "Median", "90th pct", "95th pct", "99th pct", "Transactions/s", "Received", "Sent"], "items": [{"data": ["DELETE /todos/1", 100, 0, 0.0, 15.420000000000003, 2, 41, 14.0, 25.900000000000006, 29.899999999999977, 40.969999999999985, 105.59662090813093, 16.19010691657867, 21.96492212249208], "isController": false}, {"data": ["PUT /todos/1", 100, 96, 96.0, 10.129999999999999, 2, 26, 9.0, 18.0, 20.0, 25.95999999999998, 104.82180293501048, 17.164570230607968, 30.40241745283019], "isController": false}, {"data": ["POST /todos", 100, 0, 0.0, 15.449999999999992, 3, 33, 15.5, 24.0, 27.0, 32.97999999999999, 103.84215991692628, 23.721443406022846, 30.21157840083074], "isController": false}, {"data": ["GET /todos", 100, 0, 0.0, 14.500000000000007, 2, 62, 12.0, 24.80000000000001, 27.0, 62.0, 96.80542110358179, 56.10460279525654, 11.817068005808327], "isController": false}]}, function(index, item){
+    createTable($("#statisticsTable"), {"supportsControllersDiscrimination": true, "overall": {"data": ["Total", 400, 95, 23.75, 55.407499999999985, 7, 134, 53.0, 76.0, 89.0, 127.99000000000001, 150.43249341857842, 46.74682387645732, 34.26305707032719], "isController": false}, "titles": ["Label", "#Samples", "FAIL", "Error %", "Average", "Min", "Max", "Median", "90th pct", "95th pct", "99th pct", "Transactions/s", "Received", "Sent"], "items": [{"data": ["DELETE /todos/1", 100, 0, 0.0, 53.91999999999998, 11, 108, 52.5, 72.80000000000001, 83.94999999999999, 108.0, 40.983606557377044, 6.283619364754099, 8.524910348360656], "isController": false}, {"data": ["PUT /todos/1", 100, 95, 95.0, 48.10000000000001, 7, 89, 48.0, 67.0, 72.94999999999999, 88.86999999999993, 40.816326530612244, 6.7103794642857135, 11.838329081632653], "isController": false}, {"data": ["POST /todos", 100, 0, 0.0, 65.79000000000002, 16, 134, 66.0, 94.80000000000001, 111.94999999999999, 133.99, 40.30632809351068, 9.207476823861347, 11.726622329705764], "isController": false}, {"data": ["GET /todos", 100, 0, 0.0, 53.82, 13, 129, 51.0, 71.80000000000001, 88.74999999999994, 128.99, 38.40245775729647, 26.76021265360983, 4.687800019201228], "isController": false}]}, function(index, item){
         switch(index){
             // Errors pct
             case 3:
@@ -217,7 +217,7 @@ $(document).ready(function() {
     }, [[0, 0]], 0, summaryTableHeader);
 
     // Create error table
-    createTable($("#errorsTable"), {"supportsControllersDiscrimination": false, "titles": ["Type of error", "Number of errors", "% in errors", "% in all samples"], "items": [{"data": ["404/Not Found", 96, 100.0, 24.0], "isController": false}]}, function(index, item){
+    createTable($("#errorsTable"), {"supportsControllersDiscrimination": false, "titles": ["Type of error", "Number of errors", "% in errors", "% in all samples"], "items": [{"data": ["404/Not Found", 95, 100.0, 23.75], "isController": false}]}, function(index, item){
         switch(index){
             case 2:
             case 3:
@@ -228,7 +228,7 @@ $(document).ready(function() {
     }, [[1, 1]]);
 
         // Create top5 errors by sampler
-    createTable($("#top5ErrorsBySamplerTable"), {"supportsControllersDiscrimination": false, "overall": {"data": ["Total", 400, 96, "404/Not Found", 96, null, null, null, null, null, null, null, null], "isController": false}, "titles": ["Sample", "#Samples", "#Errors", "Error", "#Errors", "Error", "#Errors", "Error", "#Errors", "Error", "#Errors", "Error", "#Errors"], "items": [{"data": [], "isController": false}, {"data": ["PUT /todos/1", 100, 96, "404/Not Found", 96, null, null, null, null, null, null, null, null], "isController": false}, {"data": [], "isController": false}, {"data": [], "isController": false}]}, function(index, item){
+    createTable($("#top5ErrorsBySamplerTable"), {"supportsControllersDiscrimination": false, "overall": {"data": ["Total", 400, 95, "404/Not Found", 95, null, null, null, null, null, null, null, null], "isController": false}, "titles": ["Sample", "#Samples", "#Errors", "Error", "#Errors", "Error", "#Errors", "Error", "#Errors", "Error", "#Errors", "Error", "#Errors"], "items": [{"data": [], "isController": false}, {"data": ["PUT /todos/1", 100, 95, "404/Not Found", 95, null, null, null, null, null, null, null, null], "isController": false}, {"data": [], "isController": false}, {"data": [], "isController": false}]}, function(index, item){
         return item;
     }, [[0, 0]], 0);
 
